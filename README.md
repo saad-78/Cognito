@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cognitio - AI Augmented Learning Platform
 
-## Getting Started
+> Built for House of Edtech Assignment (Fullstack Developer)
 
-First, run the development server:
+Cognitio is an intelligent flashcard application that uses **Generative AI (Llama 3.3)** to instantly create active recall study materials from any topic. It features a modern, optimistic UI, real-time streaming generation, and a robust serverless architecture.
 
-```bash
+
+## 🛠 Tech Stack (The "God Tier")
+
+| Layer | Technology | Why I Chose It |
+| :--- | :--- | :--- |
+| **Framework** | **Next.js 16 (Canary)** | For the new `useOptimistic` hook, Server Actions, and Partial Prerendering capabilities. |
+| **Language** | **TypeScript** | Strict mode enabled for bulletproof type safety end-to-end. |
+| **Database** | **Neon (Postgres)** | Serverless PostgreSQL. chosen for its branching capabilities and zero-cold-start speed. |
+| **ORM** | **Drizzle ORM** | Lightweight, type-safe, and faster than Prisma. SQL-like syntax keeps queries optimized. |
+| **AI Engine** | **Groq (Llama 3.3)** | Ultra-low latency inference (300+ tokens/s). Essential for the "instant" feel. |
+| **AI SDK** | **Vercel AI SDK 4.0** | Specifically `@ai-sdk/rsc` for streaming structured objects directly to client components. |
+| **Styling** | **Tailwind + Shadcn/UI** | For a premium, accessible, and responsive design system. |
+| **Auth** | **Auth.js v5 (NextAuth)** | Edge-compatible authentication with Google OAuth. |
+
+## 🌟 Key Features
+
+### 1. Generative UI Streaming
+Unlike standard chatbots, Cognitio streams **Structured JSON** directly into React components.
+- **Tech:** `streamObject` from Vercel AI SDK.
+- **Benefit:** Users see the flashcards being built card-by-card in real-time, reducing perceived latency to zero.
+
+### 2. Optimistic Mutations
+The dashboard feels instant.
+- **Tech:** `useOptimistic` hook.
+- **Benefit:** When a user creates a set, it appears immediately. The network request happens in the background. If it fails, the UI rolls back gracefully.
+
+### 3. Intelligent User Sync
+A custom "Emergency Sync" logic ensures users are never locked out, even if their OAuth ID changes (handling edge cases between Auth.js and Postgres).
+
+### 4. Production-Grade Security
+- **Zod Validation:** Every server action input is validated before execution.
+- **RSC Authorization:** Every data fetch verifies ownership `(set.userId === session.user.id)`.
+- **Middleware:** Protects private routes from unauthenticated access.
+
+## ⚡️ Getting Started
+
+### Prerequisites
+- Node.js 20+
+- A Neon DB project
+- A Groq API Key
+- Google OAuth Credentials
+
+### Installation
+
+1. **Clone the repo**
+git clone https://github.com/yourusername/cognitio.git
+cd cognitio
+
+
+2. **Install dependencies**
+npm install
+
+Note: We use --legacy-peer-deps if AI SDK versions conflict
+
+3. **Environment Setup**
+Create `.env.local`:
+DATABASE_URL="postgresql://..."
+AUTH_SECRET="your_secret"
+AUTH_GOOGLE_ID="client_id"
+AUTH_GOOGLE_SECRET="client_secret"
+GROQ_API_KEY="gsk_..."
+
+
+4. **Database Push**
+npx drizzle-kit push
+
+
+5. **Run Development Server**
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📂 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+src/
+├── actions/ # Server Actions (Mutations & AI)
+├── app/ # Next.js App Router (Pages)
+├── components/ # React Components (UI & Logic)
+├── db/ # Drizzle Schema & Connection
+└── lib/ # Utilities (AI Client, utils)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## 🧠 Design Philosophy
+I avoided "Magic" wherever possible.
+- Instead of generic API routes, I used **Server Actions** for colocation of code.
+- Instead of complex state management (Redux/Zustand), I leveraged **URL State** and **Server State**.
+- The UI is designed to be "invisible" - putting the content (knowledge) front and center.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Built by Saad Samir Momin**
