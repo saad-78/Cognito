@@ -1,12 +1,12 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
-import { studySets, flashcards, users } from '@/db/schema'; // Added users import
-import { eq } from 'drizzle-orm';
+import { studySets, flashcards, users, flashcardGenerations } from '@/db/schema';
+import { and, desc, eq, isNull, ne } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { GeneratorComponent } from '@/components/dashboard/generator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SignOutButton } from '@/components/auth/sign-out-button';
-import { ArrowLeft, BrainCircuit, Sparkles } from 'lucide-react';
+import { ArrowLeft, BrainCircuit, Sparkles, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
 type PageProps = {
@@ -15,11 +15,9 @@ type PageProps = {
 
 export default async function SetPage({ params }: PageProps) {
   const session = await auth();
-  const { id } = await params; // Await params (Next.js 16 requirement)
-
+  const { id } = await params;
   if (!session?.user?.id) redirect('/');
 
-  // 1. Resolve REAL User ID to fix the redirect loop
   let realUserId = session.user.id;
   if (session.user.email) {
     const dbUser = await db.query.users.findFirst({
@@ -28,32 +26,69 @@ export default async function SetPage({ params }: PageProps) {
     if (dbUser) realUserId = dbUser.id;
   }
 
-  // 2. Fetch Set
   const set = await db.query.studySets.findFirst({
     where: eq(studySets.id, id),
   });
 
-  // 3. Authorization Check
   if (!set || set.userId !== realUserId) {
     redirect('/dashboard');
   }
 
-  const existingCards = await db.query.flashcards.findMany({
-    where: eq(flashcards.setId, set.id),
-  });
+  const generations = await db
+    .select()
+    .from(flashcardGenerations)
+    .where(eq(flashcardGenerations.setId, set.id))
+    .orderBy(desc(flashcardGenerations.createdAt));
+
+  const latestGeneration = generations[0] ?? null;
+
+  const currentCards =
+    latestGeneration
+      ? await db
+          .select()
+          .from(flashcards)
+          .where(eq(flashcards.generationId, latestGeneration.id))
+          .orderBy(flashcards.order)
+      : [];
+
+  const legacyCards = await db
+    .select()
+    .from(flashcards)
+    .where(and(eq(flashcards.setId, set.id), isNull(flashcards.generationId)))
+    .orderBy(desc(flashcards.createdAt));
+
+  const previousGenerations = latestGeneration
+    ? generations.filter((g) => g.id !== latestGeneration.id)
+    : generations;
+
+  const previousGenCards = await Promise.all(
+    previousGenerations.map(async (g) => {
+      const cards = await db
+        .select()
+        .from(flashcards)
+        .where(eq(flashcards.generationId, g.id))
+        .orderBy(flashcards.order);
+
+      return { generation: g, cards };
+    })
+  );
+
+  const hasAnyCards =
+    (currentCards?.length ?? 0) > 0 ||
+    legacyCards.length > 0 ||
+    previousGenCards.some((x) => x.cards.length > 0);
 
   return (
     <div className="min-h-screen bg-slate-50/50">
-      {/* Header (Consistent with Dashboard) */}
       <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-             <Link href="/dashboard" className="text-slate-500 hover:text-blue-600 transition-colors">
-               <ArrowLeft className="w-5 h-5" />
-             </Link>
-             <div className="h-6 w-px bg-slate-200 mx-2" />
-             <BrainCircuit className="w-6 h-6 text-blue-600" />
-             <span className="font-bold text-lg tracking-tight hidden sm:block">Cognitio</span>
+            <Link href="/dashboard" className="text-slate-500 hover:text-blue-600 transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="h-6 w-px bg-slate-200 mx-2" />
+            <BrainCircuit className="w-6 h-6 text-blue-600" />
+            <span className="font-bold text-lg tracking-tight hidden sm:block">Cognitio</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-500 hidden md:inline">{session.user.name}</span>
@@ -63,35 +98,36 @@ export default async function SetPage({ params }: PageProps) {
       </header>
 
       <main className="container mx-auto py-10 px-4 max-w-5xl">
-        {/* Title Section */}
         <div className="mb-10 space-y-2">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">{set.title}</h1>
-          <p className="text-lg text-slate-500">{set.description || "Master this topic using AI-generated cards."}</p>
+          <p className="text-lg text-slate-500">
+            {set.description || 'Master this topic using AI-generated cards.'}
+          </p>
         </div>
 
-        {/* The Generator (Hero Section) */}
         <div className="mb-12">
-           <GeneratorComponent setId={set.id} />
+          <GeneratorComponent setId={set.id} />
         </div>
 
-        {/* Content Divider */}
-        {existingCards.length > 0 && (
+        {hasAnyCards && (
           <div className="relative mb-8">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-200" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
               <span className="bg-slate-50 px-2 text-slate-500 font-medium tracking-wider">
-                Current Flashcards ({existingCards.length})
+                Current Flashcards ({Math.min(6, currentCards.length)})
               </span>
             </div>
           </div>
         )}
 
-        {/* Flashcards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {existingCards.map((card, i) => (
-            <Card key={card.id} className="group hover:shadow-lg transition-all duration-300 border-slate-200 bg-white overflow-hidden">
+          {currentCards.slice(0, 6).map((card, i) => (
+            <Card
+              key={card.id}
+              className="group hover:shadow-lg transition-all duration-300 border-slate-200 bg-white overflow-hidden"
+            >
               <div className="h-1 w-full bg-blue-500/0 group-hover:bg-blue-500 transition-all" />
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -112,6 +148,105 @@ export default async function SetPage({ params }: PageProps) {
             </Card>
           ))}
         </div>
+
+        {(legacyCards.length > 0 || previousGenCards.length > 0) && (
+          <div className="mt-14 space-y-5">
+            <div className="flex items-end justify-between gap-4 flex-wrap">
+              <div className="space-y-1">
+                <h2 className="text-xl font-bold text-slate-900">Previous flashcards</h2>
+                <p className="text-sm text-slate-500">
+                  Older generations and legacy cards saved from earlier runs.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {legacyCards.length > 0 && (
+                <details className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden open:border-blue-200">
+                  <summary className="cursor-pointer select-none px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-slate-900 truncate">Legacy cards</span>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                          {legacyCards.length} cards
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 mt-1">
+                        Cards created before generation tracking
+                      </div>
+                    </div>
+                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </summary>
+
+                  <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {legacyCards.map((card) => (
+                        <div
+                          key={card.id}
+                          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="text-sm font-semibold text-slate-900 line-clamp-3">
+                            {card.front}
+                          </div>
+                          <div className="mt-3 text-xs text-slate-600 leading-relaxed line-clamp-5">
+                            {card.back}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              )}
+
+              {previousGenCards.map(({ generation, cards }) => (
+                <details
+                  key={generation.id}
+                  className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden open:border-blue-200"
+                >
+                  <summary className="cursor-pointer select-none px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-slate-900 truncate">
+                          {generation.topic}
+                        </span>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                          Mode: {String(generation.mode).replace('_', ' ')}
+                        </span>
+                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                          {cards.length} cards
+                        </span>
+                      </div>
+
+                      <div className="text-xs text-slate-500 mt-1">
+                        {generation.createdAt ? new Date(generation.createdAt).toLocaleString() : ''}
+                      </div>
+                    </div>
+
+                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </summary>
+
+                  <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {cards.map((card) => (
+                        <div
+                          key={card.id}
+                          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                        >
+                          <div className="text-sm font-semibold text-slate-900 line-clamp-3">
+                            {card.front}
+                          </div>
+                          <div className="mt-3 text-xs text-slate-600 leading-relaxed line-clamp-5">
+                            {card.back}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
