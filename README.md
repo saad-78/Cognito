@@ -1,6 +1,5 @@
 # Cognitio - AI Augmented Learning Platform
 
-> Built for House of Edtech Assignment (Fullstack Developer)
 
 Cognitio is an intelligent flashcard application that uses **Generative AI (Llama 3.3)** to instantly create active recall study materials from any topic. It features a modern, optimistic UI, real-time streaming generation, and a robust serverless architecture.
 
