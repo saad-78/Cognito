@@ -9,14 +9,17 @@ import { SignOutButton } from '@/components/auth/sign-out-button';
 import { ArrowLeft, BrainCircuit, Sparkles, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 
+
 type PageProps = {
   params: Promise<{ id: string }>;
 };
+
 
 export default async function SetPage({ params }: PageProps) {
   const session = await auth();
   const { id } = await params;
   if (!session?.user?.id) redirect('/');
+
 
   let realUserId = session.user.id;
   if (session.user.email) {
@@ -26,13 +29,16 @@ export default async function SetPage({ params }: PageProps) {
     if (dbUser) realUserId = dbUser.id;
   }
 
+
   const set = await db.query.studySets.findFirst({
     where: eq(studySets.id, id),
   });
 
+
   if (!set || set.userId !== realUserId) {
     redirect('/dashboard');
   }
+
 
   const generations = await db
     .select()
@@ -40,16 +46,19 @@ export default async function SetPage({ params }: PageProps) {
     .where(eq(flashcardGenerations.setId, set.id))
     .orderBy(desc(flashcardGenerations.createdAt));
 
+
   const latestGeneration = generations[0] ?? null;
+
 
   const currentCards =
     latestGeneration
       ? await db
-          .select()
-          .from(flashcards)
-          .where(eq(flashcards.generationId, latestGeneration.id))
-          .orderBy(flashcards.order)
+        .select()
+        .from(flashcards)
+        .where(eq(flashcards.generationId, latestGeneration.id))
+        .orderBy(flashcards.order)
       : [];
+
 
   const legacyCards = await db
     .select()
@@ -57,9 +66,11 @@ export default async function SetPage({ params }: PageProps) {
     .where(and(eq(flashcards.setId, set.id), isNull(flashcards.generationId)))
     .orderBy(desc(flashcards.createdAt));
 
+
   const previousGenerations = latestGeneration
     ? generations.filter((g) => g.id !== latestGeneration.id)
     : generations;
+
 
   const previousGenCards = await Promise.all(
     previousGenerations.map(async (g) => {
@@ -69,14 +80,17 @@ export default async function SetPage({ params }: PageProps) {
         .where(eq(flashcards.generationId, g.id))
         .orderBy(flashcards.order);
 
+
       return { generation: g, cards };
     })
   );
+
 
   const hasAnyCards =
     (currentCards?.length ?? 0) > 0 ||
     legacyCards.length > 0 ||
     previousGenCards.some((x) => x.cards.length > 0);
+
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -97,6 +111,7 @@ export default async function SetPage({ params }: PageProps) {
         </div>
       </header>
 
+
       <main className="container mx-auto py-10 px-4 max-w-5xl">
         <div className="mb-10 space-y-2">
           <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">{set.title}</h1>
@@ -105,9 +120,38 @@ export default async function SetPage({ params }: PageProps) {
           </p>
         </div>
 
+
         <div className="mb-12">
           <GeneratorComponent setId={set.id} />
         </div>
+
+
+        {hasAnyCards && (
+          <div className="mb-8 flex justify-center">
+            <Link 
+  href={`/dashboard/sets/${set.id}/study`}
+  className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-slate-200 hover:border-slate-900 overflow-hidden"
+>
+  {/* Shimmer effect on hover */}
+  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-slate-100/50 to-transparent" />
+  
+  {/* Animated icon with bounce */}
+  <BrainCircuit className="w-5 h-5 relative z-10 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
+  
+  {/* Text with subtle slide */}
+  <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
+    Study Now ({currentCards.length > 0 ? currentCards.length : legacyCards.length} cards)
+  </span>
+  
+  {/* Glow effect on hover */}
+  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl bg-slate-200/20 -z-10" />
+</Link>
+
+
+
+          </div>
+        )}
+
 
         {hasAnyCards && (
           <div className="relative mb-8">
@@ -121,6 +165,7 @@ export default async function SetPage({ params }: PageProps) {
             </div>
           </div>
         )}
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {currentCards.slice(0, 6).map((card, i) => (
@@ -149,6 +194,7 @@ export default async function SetPage({ params }: PageProps) {
           ))}
         </div>
 
+
         {(legacyCards.length > 0 || previousGenCards.length > 0) && (
           <div className="mt-14 space-y-5">
             <div className="flex items-end justify-between gap-4 flex-wrap">
@@ -159,6 +205,7 @@ export default async function SetPage({ params }: PageProps) {
                 </p>
               </div>
             </div>
+
 
             <div className="space-y-4">
               {legacyCards.length > 0 && (
@@ -177,6 +224,7 @@ export default async function SetPage({ params }: PageProps) {
                     </div>
                     <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   </summary>
+
 
                   <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -198,6 +246,7 @@ export default async function SetPage({ params }: PageProps) {
                 </details>
               )}
 
+
               {previousGenCards.map(({ generation, cards }) => (
                 <details
                   key={generation.id}
@@ -217,13 +266,16 @@ export default async function SetPage({ params }: PageProps) {
                         </span>
                       </div>
 
+
                       <div className="text-xs text-slate-500 mt-1">
                         {generation.createdAt ? new Date(generation.createdAt).toLocaleString() : ''}
                       </div>
                     </div>
 
+
                     <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
                   </summary>
+
 
                   <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
