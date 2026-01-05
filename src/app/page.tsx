@@ -1,7 +1,8 @@
 import { auth, signIn } from "@/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles, Zap, Brain, Check, TrendingUp, Star } from "lucide-react";
+import { ArrowRight, Sparkles, Zap, Brain, Check, TrendingUp, Star, BrainCircuit } from "lucide-react";
+import Link from "next/link";
 
 export default async function Home() {
   const session = await auth();
@@ -16,10 +17,10 @@ export default async function Home() {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0a0a0a]/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Brain className="w-5 h-5" />
-            <span className="font-bold text-base tracking-tight">Cognitio</span>
-          </div>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <BrainCircuit className="w-6 h-6 text-blue-600" />
+            <span className="font-bold text-lg tracking-tight">Cognitio</span>
+          </Link>
           <form action={async () => { "use server"; await signIn("google", { redirectTo: "/dashboard" }); }}>
             <Button 
               variant="ghost" 
@@ -181,7 +182,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section - NEW */}
+      {/* Testimonials Section */}
       <section className="relative px-6 py-24 border-t border-white/[0.06]">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">

@@ -5,6 +5,7 @@ import { eq, desc } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { StudySetList } from '@/components/dashboard/set-list';
 import { SignOutButton } from '@/components/auth/sign-out-button';
+import { BrainCircuit } from 'lucide-react';
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -36,7 +37,7 @@ export default async function DashboardPage() {
        <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* BrainIcon was here */}
+            <BrainCircuit className="w-6 h-6 text-blue-600" />
             <span className="font-bold text-lg tracking-tight">Cognitio</span>
           </div>
           <div className="flex items-center gap-4">
