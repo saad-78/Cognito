@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, integer, jsonb, pgEnum, real } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('user', {
   id: text('id').primaryKey(),
@@ -46,6 +46,13 @@ export const flashcards = pgTable('flashcard', {
   back: text('back').notNull(),
 
   masteryLevel: integer('mastery_level').default(0),
+
+  // Spaced Repetition (SM-2) fields
+  easeFactor: real('ease_factor').default(2.5).notNull(),
+  intervalDays: integer('interval_days').default(0).notNull(),
+  reviewCount: integer('review_count').default(0).notNull(),
+  dueAt: timestamp('due_at').defaultNow().notNull(),
+  lastReviewedAt: timestamp('last_reviewed_at'),
 
   createdAt: timestamp('created_at').defaultNow(),
 });

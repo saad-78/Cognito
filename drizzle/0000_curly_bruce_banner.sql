@@ -1,4 +1,9 @@
-CREATE TYPE "public"."prompt_mode" AS ENUM('just_questions', 'custom_prompt');--> statement-breakpoint
+DO $$
+BEGIN
+	CREATE TYPE "public"."prompt_mode" AS ENUM('just_questions', 'custom_prompt');
+EXCEPTION
+	WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
 CREATE TABLE "flashcard_generation" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"set_id" uuid NOT NULL,

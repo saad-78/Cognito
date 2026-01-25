@@ -34,10 +34,72 @@ export async function updateCardMastery(cardId: string, masteryLevel: number) {
   if (!set) throw new Error('Set not found');
   if (set.userId !== realUserId) throw new Error('Forbidden');
 
-  // Update mastery level
+  const normalizedMastery = Math.max(0, Math.min(3, masteryLevel));
+  // SM-2 quality: 0-2 = fail (lapse), 3-5 = pass
+  const qualityMap: Record<number, number> = {
+    0: 0, // again (fail/lapse)
+    1: 3, // hard (pass, minimal)
+    2: 4, // good (pass, normal)
+    3: 5, // easy (pass, perfect)
+  };
+
+  const quality = qualityMap[normalizedMastery] ?? 0;
+  const prevEaseFactor = card.easeFactor ?? 2.5;
+  const prevIntervalDays = card.intervalDays ?? 0;
+  const prevReviewCount = card.reviewCount ?? 0;
+
+  // SM-2 ease factor adjustment (only on pass)
+  let nextEaseFactor = prevEaseFactor;
+  if (quality >= 3) {
+    nextEaseFactor = prevEaseFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    if (nextEaseFactor < 1.3) nextEaseFactor = 1.3;
+  }
+
+  let nextReviewCount: number;
+  let nextIntervalDays: number;
+  let isLapse = false;
+
+  if (quality < 3) {
+    // Lapse: card needs re-learning, but keep reviewCount for graduation tracking
+    isLapse = true;
+    nextReviewCount = prevReviewCount; // Don't reset graduation progress
+    nextIntervalDays = 0; // Will use minutes instead
+  } else {
+    // Pass: advance through SM-2 intervals
+    nextReviewCount = prevReviewCount + 1;
+    if (prevReviewCount === 0) {
+      nextIntervalDays = 1;
+    } else if (prevReviewCount === 1) {
+      nextIntervalDays = 6;
+    } else {
+      nextIntervalDays = Math.max(1, Math.round(prevIntervalDays * nextEaseFactor));
+    }
+    // Easy bonus: multiply interval by 1.3 for perfect recall
+    if (quality === 5) {
+      nextIntervalDays = Math.max(1, Math.round(nextIntervalDays * 1.3));
+    }
+  }
+
+  const now = new Date();
+  const nextDueAt = new Date(now);
+  if (isLapse) {
+    // Re-show lapsed cards after 10 minutes (in-session re-learning)
+    nextDueAt.setMinutes(nextDueAt.getMinutes() + 10);
+  } else {
+    nextDueAt.setDate(nextDueAt.getDate() + nextIntervalDays);
+  }
+
+  // Update mastery + SRS fields
   await db
     .update(flashcards)
-    .set({ masteryLevel })
+    .set({
+      masteryLevel: normalizedMastery,
+      easeFactor: nextEaseFactor,
+      intervalDays: nextIntervalDays,
+      reviewCount: nextReviewCount,
+      dueAt: nextDueAt,
+      lastReviewedAt: now,
+    })
     .where(eq(flashcards.id, cardId));
 
   revalidatePath(`/dashboard/sets/${set.id}`);
