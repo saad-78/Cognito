@@ -17,35 +17,41 @@ Cognitio is an intelligent flashcard application that uses **Generative AI (Llam
 | **Styling** | **Tailwind + Shadcn/UI** | For a premium, accessible, and responsive design system. |
 | **Auth** | **Auth.js v5 (NextAuth)** | Edge-compatible authentication with Google OAuth. |
 
-
 ## 🌟 Key Features
 
 ### 1. Generative UI Streaming
-...existing code...
+Unlike standard chatbots, Cognitio streams **Structured JSON** directly into React components.
+- **Tech:** `streamObject` from Vercel AI SDK.
+- **Benefit:** Users see the flashcards being built card-by-card in real-time, reducing perceived latency to zero.
 
 ### 2. Optimistic Mutations
-...existing code...
+The dashboard feels instant.
+- **Tech:** `useOptimistic` hook.
+- **Benefit:** When a user creates a set, it appears immediately. The network request happens in the background. If it fails, the UI rolls back gracefully.
 
 ### 3. Intelligent User Sync
-...existing code...
+A custom "Emergency Sync" logic ensures users are never locked out, even if their OAuth ID changes (handling edge cases between Auth.js and Postgres).
 
 ### 4. Production-Grade Security
-...existing code...
+- **Zod Validation:** Every server action input is validated before execution.
+- **RSC Authorization:** Every data fetch verifies ownership `(set.userId === session.user.id)`.
+- **Middleware:** Protects private routes from unauthenticated access.
 
 ### 5. Spaced Repetition System (SRS) — SM-2 Algorithm
 
 - **Personalized Review Scheduling:** Each flashcard uses the SM-2 (SuperMemo-2) algorithm to optimize review intervals for long-term retention.
-- **How it works:**  
-	- When you rate a card ("Again", "Hard", "Good", "Easy"), the system updates its ease factor and next review date.
-	- "Again" cards reappear in-session after 10 minutes for immediate relearning.
-	- "Hard", "Good", and "Easy" ratings schedule the next review in 1 day, 6 days, or a longer interval (with a bonus for "Easy").
-	- The algorithm adapts to your memory: hard cards show up more often, easy cards less often.
+- **How it works:**
+  - When you rate a card ("Again", "Hard", "Good", "Easy"), the system updates its ease factor and next review date.
+  - "Again" cards reappear in-session after 10 minutes for immediate relearning.
+  - "Hard", "Good", and "Easy" ratings schedule the next review in 1 day, 6 days, or a longer interval (with a bonus for "Easy").
+  - The algorithm adapts to your memory: hard cards show up more often, easy cards less often.
 - **Session Queue:** Study sessions prioritize due reviews, then new cards, mixing them in a 3:1 ratio for efficient learning.
 
-**Tech:**  
-- SRS logic in `src/actions/study.ts`  
-- Session queue logic in `src/app/dashboard/sets/[id]/study/page.tsx`  
+**Tech:**
+- SRS logic in `src/actions/study.ts`
+- Session queue logic in `src/app/dashboard/sets/[id]/study/page.tsx`
 - Database fields: `easeFactor`, `intervalDays`, `reviewCount`, `dueAt`, `lastReviewedAt` in `src/db/schema.ts`
+
 
 ## ⚡️ Getting Started
 
