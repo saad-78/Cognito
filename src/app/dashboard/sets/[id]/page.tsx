@@ -1,7 +1,7 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { studySets, flashcards, users, flashcardGenerations } from '@/db/schema';
-import { and, desc, eq, isNull, ne } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { GeneratorComponent } from '@/components/dashboard/generator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,18 +72,27 @@ export default async function SetPage({ params }: PageProps) {
     : generations;
 
 
-  const previousGenCards = await Promise.all(
-    previousGenerations.map(async (g) => {
-      const cards = await db
-        .select()
-        .from(flashcards)
-        .where(eq(flashcards.generationId, g.id))
-        .orderBy(flashcards.order);
+  const previousGenCardsRaw =
+    previousGenerations.length > 0
+      ? await db
+          .select()
+          .from(flashcards)
+          .where(inArray(flashcards.generationId, previousGenerations.map((g) => g.id)))
+          .orderBy(flashcards.order)
+      : [];
 
+  const cardsByGen = new Map<string, typeof currentCards>();
+  for (const card of previousGenCardsRaw) {
+    if (!card.generationId) continue;
+    const bucket = cardsByGen.get(card.generationId) ?? [];
+    bucket.push(card);
+    cardsByGen.set(card.generationId, bucket);
+  }
 
-      return { generation: g, cards };
-    })
-  );
+  const previousGenCards = previousGenerations.map((g) => ({
+    generation: g,
+    cards: cardsByGen.get(g.id) ?? [],
+  }));
 
 
   const hasAnyCards =
