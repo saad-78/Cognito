@@ -1,0 +1,38 @@
+
+> cognitio@0.1.0 dev
+> next dev
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.8 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 1127ms
+ ○ Compiling /dashboard ...
+ ⨯ Error: Failed query: select "id", "user_id", "title", "description", "created_at" from "study_set" "studySets" where "studySets"."user_id" = $1 order by "studySets"."created_at" desc
+params: test-user
+    at async DashboardPage (src/app/dashboard/page.tsx:33:20)
+  31 |
+  32 |   // 2. Fetch Data using the REAL ID
+> 33 |   const userSets = await db.query.studySets.findMany({
+     |                    ^
+  34 |     where: eq(studySets.userId, realUserId), // <--- Use realUserId
+  35 |     orderBy: [desc(studySets.createdAt)],
+  36 |   }); {
+  query: 'select "id", "user_id", "title", "description", "created_at" from "study_set" "studySets" where "studySets"."user_id" = $1 order by "studySets"."created_at" desc',
+  params: [Array],
+  digest: '962603049',
+  [cause]: AggregateError:
+      at async DashboardPage (src/app/dashboard/page.tsx:33:20)
+    31 |
+    32 |   // 2. Fetch Data using the REAL ID
+  > 33 |   const userSets = await db.query.studySets.findMany({
+       |                    ^
+    34 |     where: eq(studySets.userId, realUserId), // <--- Use realUserId
+    35 |     orderBy: [desc(studySets.createdAt)],
+    36 |   }); {
+    code: 'ECONNREFUSED'
+  }
+}
+ GET /dashboard 500 in 9.4s (compile: 9.0s, render: 435ms)

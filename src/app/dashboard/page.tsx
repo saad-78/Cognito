@@ -1,15 +1,20 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { studySets, users } from '@/db/schema'; // Add users
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, inArray } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { StudySetList } from '@/components/dashboard/set-list';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { BrainCircuit } from 'lucide-react';
+import { flashcards } from '@/db/schema';
+import { StatsSection } from '@/components/dashboard/stats-section';
 
 export default async function DashboardPage() {
   const session = await auth();
-  if (!session?.user?.id) redirect('/');
+
+  if (!session?.user?.id) {
+    redirect('/');
+  }
 
   // 1. Resolve the REAL User ID (Handle the ID mismatch)
   let realUserId = session.user.id;
@@ -30,6 +35,46 @@ export default async function DashboardPage() {
     orderBy: [desc(studySets.createdAt)],
   });
 
+  const setIds = userSets.map((s) => s.id);
+
+  let totalFlashcards = 0;
+  let dueToday = 0;
+  let newCards = 0;
+  let totalReviewed = 0;
+  let masteredCards = 0;
+
+  if (setIds.length > 0) {
+    const userFlashcards = await db.query.flashcards.findMany({
+      where: inArray(flashcards.setId, setIds),
+    });
+
+    totalFlashcards = userFlashcards.length;
+
+    const now = new Date();
+    userFlashcards.forEach((card) => {
+      if (card.lastReviewedAt) {
+        totalReviewed++;
+        if (card.dueAt <= now) {
+          dueToday++;
+        }
+      } else {
+        newCards++;
+      }
+      if (card.intervalDays >= 21) {
+        masteredCards++;
+      }
+    });
+  }
+
+  const stats = {
+    totalSets: userSets.length,
+    totalFlashcards,
+    dueToday,
+    newCards,
+    totalReviewed,
+    masteredCards,
+  };
+
   return (
     // ... rest of your JSX remains exactly the same ...
     <div className="min-h-screen bg-slate-50/50">
@@ -42,7 +87,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-500 hidden md:inline">
-              {session.user.name}
+              {session?.user?.name ?? 'Test User'}
             </span>
             <SignOutButton />
           </div>
@@ -59,7 +104,11 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <StudySetList initialSets={JSON.parse(JSON.stringify(userSets))} />
+        <StatsSection stats={stats} />
+
+        <div className="mt-12">
+          <StudySetList initialSets={JSON.parse(JSON.stringify(userSets))} />
+        </div>
         
         {userSets.length === 0 && (
            <div className="text-center py-20 px-6 border-2 border-dashed rounded-2xl bg-white mt-8">
