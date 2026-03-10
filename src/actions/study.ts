@@ -48,21 +48,18 @@ export async function updateCardMastery(cardId: string, masteryLevel: number) {
   const prevIntervalDays = card.intervalDays ?? 0;
   const prevReviewCount = card.reviewCount ?? 0;
 
-  // SM-2 ease factor adjustment (only on pass)
-  let nextEaseFactor = prevEaseFactor;
-  if (quality >= 3) {
-    nextEaseFactor = prevEaseFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
-    if (nextEaseFactor < 1.3) nextEaseFactor = 1.3;
-  }
+  // SM-2 ease factor adjustment
+  let nextEaseFactor = prevEaseFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  if (nextEaseFactor < 1.3) nextEaseFactor = 1.3;
 
   let nextReviewCount: number;
   let nextIntervalDays: number;
   let isLapse = false;
 
   if (quality < 3) {
-    // Lapse: card needs re-learning, but keep reviewCount for graduation tracking
+    // Lapse: card needs re-learning
     isLapse = true;
-    nextReviewCount = prevReviewCount; // Don't reset graduation progress
+    nextReviewCount = 0; // Reset repetitions on lapse
     nextIntervalDays = 0; // Will use minutes instead
   } else {
     // Pass: advance through SM-2 intervals
