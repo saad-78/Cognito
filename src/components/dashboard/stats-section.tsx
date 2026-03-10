@@ -9,6 +9,7 @@ interface StatsProps {
     totalSets: number;
     totalFlashcards: number;
     dueToday: number;
+    newCards: number;
     totalReviewed: number;
     masteredCards: number;
   };
@@ -19,6 +20,10 @@ export function StatsSection({ stats }: StatsProps) {
     {
       name: 'Due Today',
       value: stats.dueToday,
+    },
+    {
+      name: 'New Cards',
+      value: stats.newCards,
     },
     {
       name: 'Reviewed',
@@ -32,7 +37,7 @@ export function StatsSection({ stats }: StatsProps) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Sets</CardTitle>
@@ -60,7 +65,17 @@ export function StatsSection({ stats }: StatsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.dueToday}</div>
-            <p className="text-xs text-muted-foreground">Cards awaiting review</p>
+            <p className="text-xs text-muted-foreground">Reviews awaiting</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">New Cards</CardTitle>
+            <BrainCircuit className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.newCards}</div>
+            <p className="text-xs text-muted-foreground">Unseen cards</p>
           </CardContent>
         </Card>
         <Card>

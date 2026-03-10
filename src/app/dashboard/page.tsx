@@ -39,6 +39,7 @@ export default async function DashboardPage() {
 
   let totalFlashcards = 0;
   let dueToday = 0;
+  let newCards = 0;
   let totalReviewed = 0;
   let masteredCards = 0;
 
@@ -51,11 +52,13 @@ export default async function DashboardPage() {
 
     const now = new Date();
     userFlashcards.forEach((card) => {
-      if (card.dueAt <= now) {
-        dueToday++;
-      }
       if (card.lastReviewedAt) {
         totalReviewed++;
+        if (card.dueAt <= now) {
+          dueToday++;
+        }
+      } else {
+        newCards++;
       }
       if (card.intervalDays >= 21) {
         masteredCards++;
@@ -67,6 +70,7 @@ export default async function DashboardPage() {
     totalSets: userSets.length,
     totalFlashcards,
     dueToday,
+    newCards,
     totalReviewed,
     masteredCards,
   };
