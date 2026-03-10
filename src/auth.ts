@@ -31,9 +31,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             name: user.name || "Anonymous",
             image: user.image,
           });
-          console.log("User created in DB:", user.email);
-        } else {
-            console.log("User exists:", user.email);
         }
       } catch (e) {
         console.error("Error creating user in DB:", e);
