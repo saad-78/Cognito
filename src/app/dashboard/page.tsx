@@ -46,6 +46,11 @@ export default async function DashboardPage() {
   if (setIds.length > 0) {
     const userFlashcards = await db.query.flashcards.findMany({
       where: inArray(flashcards.setId, setIds),
+      columns: {
+        dueAt: true,
+        lastReviewedAt: true,
+        intervalDays: true,
+      },
     });
 
     totalFlashcards = userFlashcards.length;
@@ -60,7 +65,7 @@ export default async function DashboardPage() {
       } else {
         newCards++;
       }
-      if (card.intervalDays >= 21) {
+      if (card.intervalDays > 21) {
         masteredCards++;
       }
     });
@@ -87,7 +92,7 @@ export default async function DashboardPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-slate-500 hidden md:inline">
-              {session?.user?.name ?? 'Test User'}
+              {session?.user?.name ?? session?.user?.email ?? 'User'}
             </span>
             <SignOutButton />
           </div>
