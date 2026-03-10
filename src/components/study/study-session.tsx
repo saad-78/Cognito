@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { FlipCard } from './flip-card';
 import { StudyControls } from './study-controls';
@@ -32,9 +32,18 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteryUpdates, setMasteryUpdates] = useState<Record<string, number>>({});
   const [sessionCards, setSessionCards] = useState<Card[]>(cards);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const currentCard = sessionCards[currentIndex];
   const totalCards = sessionCards.length;
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Keyboard navigation
   useEffect(() => {
@@ -100,10 +109,14 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
       });
     }
 
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     if (currentIndex < sessionCards.length - 1 || level === 'again') {
-      setTimeout(() => handleNext(), 300);
+      timeoutRef.current = setTimeout(() => handleNext(), 300);
     } else {
-      setTimeout(() => handleFinish(), 300);
+      timeoutRef.current = setTimeout(() => handleFinish(), 300);
     }
   };
 
