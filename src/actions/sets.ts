@@ -45,11 +45,9 @@ export async function createStudySet(prevState: any, formData: FormData) {
       if (existingUserByEmail) {
         // User exists but under a different ID (or we just missed the ID match)
         // USE THE EXISTING ID
-        console.log("Found user by email. Switching ID from", session.user.id, "to", existingUserByEmail.id);
         targetUserId = existingUserByEmail.id;
       } else {
         // User truly doesn't exist. Create them.
-        console.log("Creating new user...");
         await db.insert(users).values({
           id: session.user.id,
           email: session.user.email,
