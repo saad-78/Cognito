@@ -31,9 +31,10 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [masteryUpdates, setMasteryUpdates] = useState<Record<string, number>>({});
+  const [sessionCards, setSessionCards] = useState<Card[]>(cards);
 
-  const currentCard = cards[currentIndex];
-  const totalCards = cards.length;
+  const currentCard = sessionCards[currentIndex];
+  const totalCards = sessionCards.length;
 
   // Keyboard navigation
   useEffect(() => {
@@ -84,6 +85,11 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
 
     setMasteryUpdates(prev => ({ ...prev, [currentCard.id]: masteryValue }));
 
+    if (level === 'again') {
+      // Requeue the card at the end of the session
+      setSessionCards(prev => [...prev, currentCard]);
+    }
+
     try {
       await updateCardMastery(currentCard.id, masteryValue);
     } catch (error) {
@@ -94,7 +100,7 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
       });
     }
 
-    if (currentIndex < totalCards - 1) {
+    if (currentIndex < sessionCards.length - 1 || level === 'again') {
       setTimeout(() => handleNext(), 300);
     } else {
       setTimeout(() => handleFinish(), 300);
