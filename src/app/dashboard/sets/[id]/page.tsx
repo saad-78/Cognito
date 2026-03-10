@@ -81,9 +81,17 @@ export default async function SetPage({ params }: PageProps) {
           .orderBy(flashcards.order)
       : [];
 
+  const cardsByGen = new Map<string, typeof currentCards>();
+  for (const card of previousGenCardsRaw) {
+    if (!card.generationId) continue;
+    const bucket = cardsByGen.get(card.generationId) ?? [];
+    bucket.push(card);
+    cardsByGen.set(card.generationId, bucket);
+  }
+
   const previousGenCards = previousGenerations.map((g) => ({
     generation: g,
-    cards: previousGenCardsRaw.filter((c) => c.generationId === g.id),
+    cards: cardsByGen.get(g.id) ?? [],
   }));
 
 
