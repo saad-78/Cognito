@@ -96,6 +96,8 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
 
     if (currentIndex < totalCards - 1) {
       setTimeout(() => handleNext(), 300);
+    } else {
+      setTimeout(() => handleFinish(), 300);
     }
   };
 
