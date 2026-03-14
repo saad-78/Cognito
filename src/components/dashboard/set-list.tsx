@@ -1,12 +1,13 @@
 'use client'
 
-import { useOptimistic, useRef } from 'react';
+import { useOptimistic, useRef, useState } from 'react';
 import { createStudySet, deleteStudySet } from '@/actions/sets';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Trash2, ArrowRight, Plus, Calendar, BookOpen, Sparkles } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Trash2, ArrowRight, Plus, Calendar, BookOpen, Sparkles, Zap, Brain } from 'lucide-react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type StudySet = {
   id: string;
@@ -17,6 +18,7 @@ type StudySet = {
 
 export function StudySetList({ initialSets }: { initialSets: StudySet[] }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const [sets, addOptimisticSet] = useOptimistic(
     initialSets,
@@ -27,6 +29,7 @@ export function StudySetList({ initialSets }: { initialSets: StudySet[] }) {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
 
+    setIsCreating(true);
     addOptimisticSet({
       id: crypto.randomUUID(),
       title,
@@ -36,168 +39,163 @@ export function StudySetList({ initialSets }: { initialSets: StudySet[] }) {
 
     formRef.current?.reset();
     await createStudySet(null, formData);
+    setIsCreating(false);
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-12">
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl border border-slate-200 bg-white">
-          <div className="text-sm font-medium text-slate-600 mb-1">Total Sets</div>
-          <div className="text-3xl font-bold text-slate-900">{sets.length}</div>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-200 bg-white">
-          <div className="text-sm font-medium text-slate-600 mb-1">This Week</div>
-          <div className="text-3xl font-bold text-slate-900">
-            {sets.filter(s => s.createdAt && new Date(s.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
-          </div>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-200 bg-white">
-          <div className="text-sm font-medium text-slate-600 mb-1">In Progress</div>
-          <div className="text-3xl font-bold text-slate-900">{sets.length}</div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {[
+          { label: 'Intelligence Sets', value: sets.length, icon: Brain, color: 'text-blue-500' },
+          { label: 'Active This Week', value: sets.filter(s => s.createdAt && new Date(s.createdAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length, icon: Zap, color: 'text-yellow-500' },
+          { label: 'Knowledge Points', value: sets.length * 12, icon: Sparkles, color: 'text-purple-500' }
+        ].map((stat, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: i * 0.1 }}
+            className="p-6 rounded-3xl glass glass-hover relative overflow-hidden group"
+          >
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <div className="text-sm font-bold text-white/40 mb-1 uppercase tracking-widest">{stat.label}</div>
+                <div className="text-4xl font-black text-white">{stat.value}</div>
+              </div>
+              <stat.icon className={`w-10 h-10 ${stat.color} opacity-20 group-hover:opacity-100 transition-opacity duration-500`} />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-24 h-24 bg-white/[0.02] rounded-full blur-2xl" />
+          </motion.div>
+        ))}
       </div>
 
-      {/* Creation Form - Notion-inspired */}
-      <Card className="border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow">
-        <div className="p-6">
-          <div className="flex items-start gap-4 mb-6">
-            <svg className="w-10 h-10 flex-shrink-0" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="1" y="1" width="46" height="46" rx="7" stroke="black" strokeWidth="2" fill="white" />
-              <path d="M16 14H28C29.1046 14 30 14.8954 30 16V32C30 33.1046 29.1046 34 28 34H16V14Z" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M16 34C16 32.8954 16.8954 32 18 32H30" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M20 20H26" stroke="black" strokeWidth="2" strokeLinecap="round" />
-              <path d="M20 24H26" stroke="black" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-slate-900 mb-1">Create New Study Set</h3>
-              <p className="text-sm text-slate-500">Generate AI-powered flashcards in seconds</p>
+      {/* Creation Area */}
+      <section className="relative">
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-[2.5rem] blur-2xl opacity-50" />
+        <Card className="relative border-white/[0.08] bg-white/[0.03] backdrop-blur-2xl rounded-[2rem] overflow-hidden">
+          <div className="p-8 md:p-12">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+                <Plus className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-white tracking-tight">Expand Your Mind</h3>
+                <p className="text-white/40 text-sm font-medium">Add a topic to generate AI-powered insights</p>
+              </div>
             </div>
-          </div>
 
-          <form ref={formRef} action={handleCreate} className="space-y-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="title" className="block text-sm font-semibold text-slate-700">
-                  Subject Title
+            <form ref={formRef} action={handleCreate} className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+              <div className="space-y-2.5">
+                <label htmlFor="title" className="block text-xs font-bold text-white/50 uppercase tracking-widest ml-1">
+                  Topic or Subject
                 </label>
                 <Input
                   name="title"
                   id="title"
-                  placeholder="e.g., Quantum Physics, React Hooks, World History..."
+                  placeholder="e.g. Advanced Bio-Chemistry"
                   required
-                  className="h-11 border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 text-base placeholder:text-slate-400"
+                  className="h-14 bg-white/5 border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white placeholder:text-white/20 rounded-2xl px-6"
                 />
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="description" className="block text-sm font-semibold text-slate-700">
-                  Description <span className="text-slate-400 font-normal text-xs">(Optional)</span>
-                </label>
-                <Input
-                  name="description"
-                  id="description"
-                  placeholder="Add context about what you're learning..."
-                  className="h-11 border-slate-200 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 text-base placeholder:text-slate-400"
-                />
+              <div className="flex gap-4">
+                <div className="flex-1 space-y-2.5">
+                  <label htmlFor="description" className="block text-xs font-bold text-white/50 uppercase tracking-widest ml-1">
+                    Context (Optional)
+                  </label>
+                  <Input
+                    name="description"
+                    id="description"
+                    placeholder="Brief objective..."
+                    className="h-14 bg-white/5 border-white/[0.08] focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-white placeholder:text-white/20 rounded-2xl px-6"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isCreating}
+                  className="h-14 px-8 bg-white hover:bg-white/90 text-black font-black rounded-2xl transition-all shadow-xl disabled:opacity-50 group shrink-0"
+                >
+                  <Sparkles className="w-5 h-5 mr-3 text-blue-600 group-hover:animate-pulse" />
+                  Generate
+                </Button>
               </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-11 bg-slate-900 hover:bg-black text-white font-semibold shadow-sm hover:shadow-md transition-all text-base"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Study Set
-            </Button>
-          </form>
-        </div>
-      </Card>
-
-      {/* Section Header */}
-      {sets.length > 0 && (
-        <div className="flex items-center justify-between pt-4">
-          <div>
-            <h2 className="text-xl font-bold text-slate-900">Your Study Sets</h2>
-            <p className="text-sm text-slate-500 mt-0.5">{sets.length} {sets.length === 1 ? 'set' : 'sets'} created</p>
+            </form>
           </div>
+        </Card>
+      </section>
+
+      {/* Grid Header */}
+      {sets.length > 0 && (
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-black tracking-tight text-white px-2">Knowledge Vault</h2>
+          <div className="h-px flex-1 mx-8 bg-white/[0.05]" />
+          <span className="text-xs font-bold text-white/30 uppercase tracking-[0.2em]">{sets.length} Collections</span>
         </div>
       )}
 
-      {/* Empty State - Linear-inspired */}
-      {sets.length === 0 && (
-        <div className="relative rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-12 text-center">
-          <div className="max-w-sm mx-auto">
-            <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 flex items-center justify-center mx-auto mb-6 shadow-sm">
-              <BookOpen className="w-8 h-8 text-slate-400" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No study sets yet</h3>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">
-              Create your first study set above to start generating AI-powered flashcards instantly.
-            </p>
-            <div className="inline-flex items-center gap-2 text-xs text-slate-500 bg-white px-3 py-2 rounded-lg border border-slate-200">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Powered by Llama 3.3</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cards Grid - HubSpot-inspired */}
-      {sets.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sets.map((set) => (
-            <Card
+      {/* Cards Grid */}
+      <AnimatePresence mode="popLayout">
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {sets.map((set, idx) => (
+            <motion.div
+              layout
               key={set.id}
-              className="group relative border-2 border-slate-200 hover:border-slate-900 bg-white hover:shadow-lg transition-all duration-200"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ delay: idx * 0.05 }}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                    <BookOpen className="w-4 h-4 text-slate-700" />
+              <Card
+                className="group relative h-full glass glass-hover rounded-3xl overflow-hidden border-white/[0.08] flex flex-col pt-8 pb-6 px-8"
+              >
+                <div className="flex items-start justify-between gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                    <BookOpen className="w-6 h-6 text-white/60 group-hover:text-primary transition-colors" />
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all -mt-1 -mr-1"
+                    className="h-10 w-10 text-white/20 hover:text-red-400 hover:bg-red-500/10 transition-all rounded-xl"
                     onClick={async () => await deleteStudySet(set.id)}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
 
-                <CardTitle className="text-base font-bold text-slate-900 line-clamp-2 leading-tight min-h-[2.5rem]">
-                  {set.title}
-                </CardTitle>
-                <CardDescription className="line-clamp-2 text-sm text-slate-600 leading-relaxed min-h-[2.5rem]">
-                  {set.description || "No description"}
-                </CardDescription>
-              </CardHeader>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-white mb-3 leading-tight tracking-tight group-hover:text-primary transition-colors">
+                    {set.title}
+                  </h3>
+                  <p className="text-white/40 text-sm leading-relaxed line-clamp-2 mb-8 font-medium">
+                    {set.description || "Synthesizing intelligence through AI analysis."}
+                  </p>
+                </div>
 
-              <CardFooter className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                {set.createdAt && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                    <Calendar className="w-3 h-3" />
-                    <span>{new Date(set.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <div className="flex items-center justify-between pt-6 border-t border-white/[0.04]">
+                  <div className="flex items-center gap-2 text-[10px] font-bold text-white/20 uppercase tracking-widest">
+                    <Calendar className="w-3 h-3 text-blue-500/50" />
+                    <span>{set.createdAt ? new Date(set.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}</span>
                   </div>
-                )}
 
-                <Link href={`/dashboard/sets/${set.id}`} className="ml-auto">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-medium transition-all group/btn -mr-2"
-                  >
-                    Open
-                    <ArrowRight className="ml-1 w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
-                  </Button>
-                </Link>
-              </CardFooter>
-            </Card>
+                  <Link href={`/dashboard/sets/${set.id}`}>
+                    <Button
+                      variant="ghost"
+                      className="group/btn h-10 -mr-4 px-6 text-white/60 hover:text-white font-bold hover:bg-transparent transition-all"
+                    >
+                      Enter Vault
+                      <ArrowRight className="ml-2 w-4 h-4 group-hover/btn:translate-x-1.5 transition-transform" />
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Decorative depth element */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+              </Card>
+            </motion.div>
           ))}
-        </div>
-      )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

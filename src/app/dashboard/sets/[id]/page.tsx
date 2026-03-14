@@ -1,25 +1,22 @@
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { studySets, flashcards, users, flashcardGenerations } from '@/db/schema';
-import { and, desc, eq, inArray, isNull, ne } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNull } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { GeneratorComponent } from '@/components/dashboard/generator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SignOutButton } from '@/components/auth/sign-out-button';
-import { ArrowLeft, BrainCircuit, Sparkles, ChevronDown } from 'lucide-react';
+import { ArrowLeft, BrainCircuit, Sparkles, ChevronDown, Rocket, Layers, History, FastForward } from 'lucide-react';
 import Link from 'next/link';
-
 
 type PageProps = {
   params: Promise<{ id: string }>;
 };
 
-
 export default async function SetPage({ params }: PageProps) {
   const session = await auth();
   const { id } = await params;
   if (!session?.user?.id) redirect('/');
-
 
   let realUserId = session.user.id;
   if (session.user.email) {
@@ -29,16 +26,13 @@ export default async function SetPage({ params }: PageProps) {
     if (dbUser) realUserId = dbUser.id;
   }
 
-
   const set = await db.query.studySets.findFirst({
     where: eq(studySets.id, id),
   });
 
-
   if (!set || set.userId !== realUserId) {
     redirect('/dashboard');
   }
-
 
   const generations = await db
     .select()
@@ -46,9 +40,7 @@ export default async function SetPage({ params }: PageProps) {
     .where(eq(flashcardGenerations.setId, set.id))
     .orderBy(desc(flashcardGenerations.createdAt));
 
-
   const latestGeneration = generations[0] ?? null;
-
 
   const currentCards =
     latestGeneration
@@ -59,18 +51,15 @@ export default async function SetPage({ params }: PageProps) {
         .orderBy(flashcards.order)
       : [];
 
-
   const legacyCards = await db
     .select()
     .from(flashcards)
     .where(and(eq(flashcards.setId, set.id), isNull(flashcards.generationId)))
     .orderBy(desc(flashcards.createdAt));
 
-
   const previousGenerations = latestGeneration
     ? generations.filter((g) => g.id !== latestGeneration.id)
     : generations;
-
 
   const previousGenCardsRaw =
     previousGenerations.length > 0
@@ -94,214 +83,144 @@ export default async function SetPage({ params }: PageProps) {
     cards: cardsByGen.get(g.id) ?? [],
   }));
 
-
   const hasAnyCards =
     (currentCards?.length ?? 0) > 0 ||
     legacyCards.length > 0 ||
     previousGenCards.some((x) => x.cards.length > 0);
 
-
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link href="/dashboard" className="text-slate-500 hover:text-blue-600 transition-colors">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-background/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
               <ArrowLeft className="w-5 h-5" />
             </Link>
-            <div className="h-6 w-px bg-slate-200 mx-2" />
-            <BrainCircuit className="w-6 h-6 text-blue-600" />
-            <span className="font-bold text-lg tracking-tight hidden sm:block">Cognitio</span>
+            <div className="flex items-center gap-2.5">
+              <BrainCircuit className="w-5 h-5 text-primary" />
+              <span className="font-bold text-sm tracking-widest uppercase text-white/40">Vault Explorer</span>
+            </div>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500 hidden md:inline">{session.user.name}</span>
             <SignOutButton />
           </div>
         </div>
       </header>
 
+      <main className="max-w-6xl mx-auto py-16 px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+              <Layers className="w-3 h-3" />
+              Current Generation
+            </div>
+            <h1 className="text-5xl font-black tracking-tighter text-white uppercase">{set.title}</h1>
+            <p className="text-lg text-white/40 font-medium max-w-xl">
+              {set.description || 'Deconstructing complex concepts into bite-sized intelligence.'}
+            </p>
+          </div>
 
-      <main className="container mx-auto py-10 px-4 max-w-5xl">
-        <div className="mb-10 space-y-2">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">{set.title}</h1>
-          <p className="text-lg text-slate-500">
-            {set.description || 'Master this topic using AI-generated cards.'}
-          </p>
-        </div>
-
-
-        <div className="mb-12">
-          <GeneratorComponent setId={set.id} />
-        </div>
-
-
-        {hasAnyCards && (
-          <div className="mb-8 flex justify-center">
+          {hasAnyCards && (
             <Link 
-  href={`/dashboard/sets/${set.id}/study`}
-  className="group relative inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-slate-900 font-bold rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-slate-200 hover:border-slate-900 overflow-hidden"
->
-  {/* Shimmer effect on hover */}
-  <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out bg-gradient-to-r from-transparent via-slate-100/50 to-transparent" />
-  
-  {/* Animated icon with bounce */}
-  <BrainCircuit className="w-5 h-5 relative z-10 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12" />
-  
-  {/* Text with subtle slide */}
-  <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-0.5">
-    Study Now ({currentCards.length > 0 ? currentCards.length : legacyCards.length} cards)
-  </span>
-  
-  {/* Glow effect on hover */}
-  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl bg-slate-200/20 -z-10" />
-</Link>
-
-
-
-          </div>
-        )}
-
-
-        {hasAnyCards && (
-          <div className="relative mb-8">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-slate-200" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-slate-50 px-2 text-slate-500 font-medium tracking-wider">
-                Current Flashcards ({Math.min(6, currentCards.length)})
-              </span>
-            </div>
-          </div>
-        )}
-
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentCards.slice(0, 6).map((card, i) => (
-            <Card
-              key={card.id}
-              className="group hover:shadow-lg transition-all duration-300 border-slate-200 bg-white overflow-hidden"
+              href={`/dashboard/sets/${set.id}/study`}
+              className="relative group p-1 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_20px_40px_-12px_rgba(59,130,246,0.5)] transition-transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <div className="h-1 w-full bg-blue-500/0 group-hover:bg-blue-500 transition-all" />
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Sparkles className="w-3 h-3 text-blue-400" />
-                  Card {i + 1}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg text-slate-800 leading-tight mb-2">
-                    {card.front}
-                  </h3>
-                  <p className="text-slate-600 leading-relaxed text-sm bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    {card.back}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              <div className="px-8 py-4 bg-background rounded-[14px] flex items-center gap-3">
+                <Rocket className="w-5 h-5 text-white animate-pulse" />
+                <span className="font-black text-white uppercase tracking-widest text-sm">
+                  Initialize Training ({currentCards.length || legacyCards.length})
+                </span>
+                <FastForward className="w-4 h-4 text-white/40 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </Link>
+          )}
         </div>
 
+        <GeneratorComponent setId={set.id} />
+
+        {currentCards.length > 0 && (
+          <div className="mt-24 space-y-12">
+            <div className="flex items-center gap-4">
+               <h2 className="text-sm font-black text-white/20 uppercase tracking-[0.3em]">Insights Grid</h2>
+               <div className="h-px flex-1 bg-white/[0.05]" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {currentCards.map((card, i) => (
+                <div key={card.id} className="group relative glass rounded-[2rem] p-8 overflow-hidden">
+                  <div className="relative z-10 space-y-6">
+                    <div className="flex items-center justify-between">
+                       <span className="text-[10px] font-black text-white/20 uppercase tracking-widest">Node {i+1}</span>
+                       <Sparkles className="w-3 h-3 text-blue-500/30 group-hover:text-blue-500 transition-colors" />
+                    </div>
+                    <h3 className="text-lg font-bold text-white leading-tight">{card.front}</h3>
+                    <p className="text-sm text-white/40 font-medium leading-relaxed bg-white/5 p-4 rounded-2xl border border-white/5">
+                      {card.back}
+                    </p>
+                  </div>
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {(legacyCards.length > 0 || previousGenCards.length > 0) && (
-          <div className="mt-14 space-y-5">
-            <div className="flex items-end justify-between gap-4 flex-wrap">
-              <div className="space-y-1">
-                <h2 className="text-xl font-bold text-slate-900">Previous flashcards</h2>
-                <p className="text-sm text-slate-500">
-                  Older generations and legacy cards saved from earlier runs.
-                </p>
-              </div>
+          <div className="mt-32 space-y-8">
+            <div className="flex items-center gap-4 mb-4">
+               <History className="w-5 h-5 text-white/20" />
+               <h2 className="text-lg font-black text-white uppercase tracking-widest">Temporal Archives</h2>
             </div>
-
 
             <div className="space-y-4">
               {legacyCards.length > 0 && (
-                <details className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden open:border-blue-200">
-                  <summary className="cursor-pointer select-none px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold text-slate-900 truncate">Legacy cards</span>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                          {legacyCards.length} cards
-                        </span>
+                <details className="group glass rounded-3xl overflow-hidden border-white/[0.08]">
+                  <summary className="cursor-pointer list-none p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                        <Layers className="w-5 h-5 text-white/40" />
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">
-                        Cards created before generation tracking
+                      <div>
+                        <div className="text-sm font-black text-white uppercase tracking-widest">Legacy Nodes</div>
+                        <div className="text-[10px] font-bold text-white/20 uppercase mt-1">Foundational data layer • {legacyCards.length} Cards</div>
                       </div>
                     </div>
-                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                    <ChevronDown className="w-5 h-5 text-white/20 group-open:rotate-180 transition-transform" />
                   </summary>
-
-
-                  <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {legacyCards.map((card) => (
-                        <div
-                          key={card.id}
-                          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                        >
-                          <div className="text-sm font-semibold text-slate-900 line-clamp-3">
-                            {card.front}
-                          </div>
-                          <div className="mt-3 text-xs text-slate-600 leading-relaxed line-clamp-5">
-                            {card.back}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <div className="p-8 bg-black/40 border-t border-white/[0.04] grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {legacyCards.map((card) => (
+                      <div key={card.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
+                        <div className="text-sm font-bold text-white mb-2">{card.front}</div>
+                        <div className="text-xs text-white/30 leading-relaxed font-medium">{card.back}</div>
+                      </div>
+                    ))}
                   </div>
                 </details>
               )}
 
-
               {previousGenCards.map(({ generation, cards }) => (
-                <details
-                  key={generation.id}
-                  className="group rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden open:border-blue-200"
-                >
-                  <summary className="cursor-pointer select-none px-5 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 transition-colors">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-slate-900 truncate">
-                          {generation.topic}
-                        </span>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-                          Mode: {String(generation.mode).replace('_', ' ')}
-                        </span>
-                        <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                          {cards.length} cards
-                        </span>
+                <details key={generation.id} className="group glass rounded-3xl overflow-hidden border-white/[0.08]">
+                   <summary className="cursor-pointer list-none p-6 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center border border-primary/20 text-primary">
+                        <History className="w-5 h-5" />
                       </div>
-
-
-                      <div className="text-xs text-slate-500 mt-1">
-                        {generation.createdAt ? new Date(generation.createdAt).toLocaleString() : ''}
-                      </div>
-                    </div>
-
-
-                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  </summary>
-
-
-                  <div className="px-5 pb-5 pt-4 border-t border-slate-100 bg-slate-50/40">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {cards.map((card) => (
-                        <div
-                          key={card.id}
-                          className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
-                        >
-                          <div className="text-sm font-semibold text-slate-900 line-clamp-3">
-                            {card.front}
-                          </div>
-                          <div className="mt-3 text-xs text-slate-600 leading-relaxed line-clamp-5">
-                            {card.back}
-                          </div>
+                      <div>
+                        <div className="text-sm font-black text-white uppercase tracking-widest truncate max-w-[200px]">{generation.topic}</div>
+                        <div className="text-[10px] font-bold text-white/20 uppercase mt-1">
+                          {new Date(generation.createdAt || '').toLocaleDateString()} • {cards.length} Cards
                         </div>
-                      ))}
+                      </div>
                     </div>
+                    <ChevronDown className="w-5 h-5 text-white/20 group-open:rotate-180 transition-transform" />
+                  </summary>
+                  <div className="p-8 bg-black/40 border-t border-white/[0.04] grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {cards.map((card) => (
+                      <div key={card.id} className="p-5 rounded-2xl bg-white/[0.02] border border-white/5">
+                        <div className="text-sm font-bold text-white mb-2">{card.front}</div>
+                        <div className="text-xs text-white/30 leading-relaxed font-medium">{card.back}</div>
+                      </div>
+                    ))}
                   </div>
                 </details>
               ))}

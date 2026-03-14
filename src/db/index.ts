@@ -1,12 +1,10 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { neon } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
 import * as schema from './schema';
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // Changed from DATABASE_URL_UNPOOLED
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
+if (!process.env.DATABASE_URL) {
+  throw new Error('DATABASE_URL is not defined');
+}
 
-export const db = drizzle(pool, { schema });
+const sql = neon(process.env.DATABASE_URL);
+export const db = drizzle(sql, { schema });

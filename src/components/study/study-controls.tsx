@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, RotateCcw, Frown, Smile, Zap } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 type StudyControlsProps = {
   isFlipped: boolean;
@@ -10,7 +11,6 @@ type StudyControlsProps = {
   onPrevious: () => void;
   onNext: () => void;
   onMastery: (level: 'again' | 'hard' | 'good' | 'easy') => void;
-  onFinish: () => void;
 };
 
 export function StudyControls({
@@ -20,136 +20,64 @@ export function StudyControls({
   onPrevious,
   onNext,
   onMastery,
-  onFinish,
 }: StudyControlsProps) {
   return (
-    <div className="space-y-5">
-      {/* Mastery Buttons */}
-      {isFlipped && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <p className="text-center text-sm font-semibold text-slate-700 mb-4">
-            How well did you know this?
-          </p>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Again - Refresh/Repeat Icon */}
-            <Button
-              onClick={() => onMastery('again')}
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center justify-center gap-2 border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition-all group"
-            >
-              <svg 
-                className="w-5 h-5 text-slate-700 group-hover:text-slate-900 group-hover:scale-110 transition-all" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
+    <div className="space-y-10">
+      {/* Mastery Ratings */}
+      <AnimatePresence>
+        {isFlipped && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-4"
+          >
+            {[
+              { id: 'again', label: 'Incognizant', icon: RotateCcw, color: 'hover:text-red-500 hover:border-red-500/50', key: '1' },
+              { id: 'hard', label: 'Strained', icon: Frown, color: 'hover:text-orange-500 hover:border-orange-500/50', key: '2' },
+              { id: 'good', label: 'Retained', icon: Smile, color: 'hover:text-green-500 hover:border-green-500/50', key: '3' },
+              { id: 'easy', label: 'Mastered', icon: Zap, color: 'hover:text-blue-500 hover:border-blue-500/50', key: '4' },
+            ].map((rating) => (
+              <Button
+                key={rating.id}
+                onClick={() => onMastery(rating.id as any)}
+                variant="outline"
+                className={`h-auto py-6 flex flex-col items-center justify-center gap-2 glass rounded-2xl border-white/[0.08] transition-all group ${rating.color}`}
               >
-                <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
-              </svg>
-              <span className="text-sm font-bold text-slate-900">Again</span>
-              <span className="text-xs text-slate-500 lg:block hidden">Press 1</span>
-            </Button>
+                <rating.icon className="w-6 h-6 opacity-40 group-hover:opacity-100 transition-all duration-300" />
+                <div className="space-y-0.5">
+                  <div className="text-xs font-black uppercase tracking-widest text-white/80">{rating.label}</div>
+                  <div className="text-[10px] font-bold text-white/20 uppercase">Press {rating.key}</div>
+                </div>
+              </Button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Hard - Thumbs Down Icon */}
-            <Button
-              onClick={() => onMastery('hard')}
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center justify-center gap-2 border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition-all group"
-            >
-              <svg 
-                className="w-5 h-5 text-slate-700 group-hover:text-slate-900 group-hover:scale-110 transition-all" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M17 14V2M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z" />
-              </svg>
-              <span className="text-sm font-bold text-slate-900">Hard</span>
-              <span className="text-xs text-slate-500 lg:block hidden">Press 2</span>
-            </Button>
-
-            {/* Good - Thumbs Up Icon */}
-            <Button
-              onClick={() => onMastery('good')}
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center justify-center gap-2 border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition-all group"
-            >
-              <svg 
-                className="w-5 h-5 text-slate-700 group-hover:text-slate-900 group-hover:scale-110 transition-all" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z" />
-              </svg>
-              <span className="text-sm font-bold text-slate-900">Good</span>
-              <span className="text-xs text-slate-500 lg:block hidden">Press 3</span>
-            </Button>
-
-            {/* Easy - Star/Sparkle Icon */}
-            <Button
-              onClick={() => onMastery('easy')}
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center justify-center gap-2 border-2 border-slate-300 hover:border-slate-900 hover:bg-slate-50 transition-all group"
-            >
-              <svg 
-                className="w-5 h-5 text-slate-700 group-hover:text-slate-900 group-hover:scale-110 transition-all" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              <span className="text-sm font-bold text-slate-900">Easy</span>
-              <span className="text-xs text-slate-500 lg:block hidden">Press 4</span>
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <div className="flex items-center justify-center gap-4">
+      {/* Basic Navigation */}
+      <div className="flex items-center justify-between gap-6">
         <Button
           onClick={onPrevious}
           disabled={isFirst}
-          variant="outline"
-          size="lg"
-          className="flex-1 max-w-[160px] font-semibold border-2 border-slate-300 hover:border-slate-900 disabled:opacity-40 disabled:hover:border-slate-300"
+          variant="ghost"
+          className="flex-1 max-w-[200px] h-14 rounded-2xl font-bold text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-0 transition-opacity"
         >
-          <ChevronLeft className="w-5 h-5 mr-1" />
-          Previous
+          <ChevronLeft className="w-5 h-5 mr-2" />
+          Prior Insight
         </Button>
 
-        {isLast ? (
-          <Button
-            onClick={onFinish}
-            size="lg"
-            className="flex-1 max-w-[160px] bg-slate-900 hover:bg-black text-white font-bold shadow-lg hover:shadow-xl transition-all border-2 border-slate-900 hover:border-black"
-          >
-            <CheckCircle2 className="w-5 h-5 mr-2" />
-            Finish
-          </Button>
-        ) : (
-          <Button
-            onClick={onNext}
-            size="lg"
-            className="flex-1 max-w-[160px] bg-slate-900 hover:bg-black text-white font-bold shadow-lg hover:shadow-xl transition-all border-2 border-slate-900 hover:border-black"
-          >
-            Next
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </Button>
-        )}
+        <div className="h-px flex-1 bg-white/[0.05]" />
+
+        <Button
+          onClick={onNext}
+          disabled={isLast}
+          variant="ghost"
+          className="flex-1 max-w-[200px] h-14 rounded-2xl font-bold text-white/40 hover:text-white hover:bg-white/5 disabled:opacity-0 transition-opacity"
+        >
+          Proceed
+          <ChevronRight className="w-5 h-5 ml-2" />
+        </Button>
       </div>
     </div>
   );
