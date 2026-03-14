@@ -39,167 +39,150 @@ export function StatsSection({ stats, forecastData = [], retentionData = [] }: S
       variants={container}
       initial="hidden"
       animate="show"
-      className="space-y-12"
+      className="space-y-20 px-12"
     >
-      {/* Metric Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {/* Metric Grid - High Contrast */}
+      <div className="grid gap-px bg-border border border-border md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {[
-          { label: 'Total Sets', value: stats.totalSets, icon: Layers, color: 'text-blue-500', detail: 'Knowledge Hubs' },
-          { label: 'Total Nodes', value: stats.totalFlashcards, icon: PlaySquare, color: 'text-purple-500', detail: 'Flashcards' },
-          { label: 'Due Today', value: stats.dueToday, icon: CalendarClock, color: 'text-pink-500', detail: 'Pending Review' },
-          { label: 'New Intake', value: stats.newCards, icon: BrainCircuit, color: 'text-cyan-500', detail: 'Unseen Data' },
-          { label: 'Activity', value: stats.totalReviewed, icon: Activity, color: 'text-emerald-500', detail: 'Total Sessions' },
-          { label: 'Mastered', value: stats.masteredCards, icon: Trophy, color: 'text-amber-500', detail: 'Consolidated' },
+          { label: 'Total Sets', value: stats.totalSets, icon: Layers, detail: 'Hubs' },
+          { label: 'Total Nodes', value: stats.totalFlashcards, icon: PlaySquare, detail: 'Cards' },
+          { label: 'Due Today', value: stats.dueToday, icon: CalendarClock, detail: 'Pending' },
+          { label: 'New Intake', value: stats.newCards, icon: BrainCircuit, detail: 'Unseen' },
+          { label: 'Activity', value: stats.totalReviewed, icon: Activity, detail: 'Sessions' },
+          { label: 'Mastered', value: stats.masteredCards, icon: Trophy, detail: 'Finalized' },
         ].map((stat, i) => (
           <motion.div key={i} variants={item}>
-            <Card className="glass group hover:border-white/10 transition-all duration-500 rounded-3xl overflow-hidden relative">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center ${stat.color} group-hover:scale-110 transition-transform`}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                  <Sparkles className="w-3 h-3 text-white/5 group-hover:text-primary transition-colors" />
-                </div>
-                <div className="space-y-1">
-                  <div className="text-3xl font-black text-white tracking-tighter tabular-nums">{stat.value}</div>
-                  <div className="text-[10px] font-bold text-white/20 uppercase tracking-[0.2em]">{stat.label}</div>
-                </div>
-                <div className="mt-4 text-[9px] font-medium text-white/10 uppercase tracking-widest">{stat.detail}</div>
-              </CardContent>
-              {/* Decorative glow */}
-              <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-white/[0.02] rounded-full blur-2xl group-hover:bg-primary/5 transition-colors" />
-            </Card>
+            <div className="bg-background p-10 space-y-6 hover:bg-secondary transition-colors group">
+              <div className="flex items-center justify-between">
+                <stat.icon className="w-6 h-6 text-foreground/20 group-hover:text-foreground transition-colors" />
+              </div>
+              <div className="space-y-1">
+                <div className="text-5xl font-black text-foreground tracking-tighter tabular-nums">{stat.value}</div>
+                <div className="text-[10px] font-black text-foreground/30 uppercase tracking-[0.3em]">{stat.label}</div>
+              </div>
+              <div className="text-[10px] font-bold text-foreground/10 uppercase tracking-widest">{stat.detail}</div>
+            </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Visual Analytics */}
-      <div className="grid gap-8 lg:grid-cols-2">
+      {/* Visual Analytics - Strict Layout */}
+      <div className="grid gap-px bg-border border border-border lg:grid-cols-2">
         {/* Forecast Visualization */}
         <motion.div variants={item}>
-          <Card className="glass rounded-[2.5rem] p-8 border-white/[0.04]">
-             <div className="flex items-center justify-between mb-8">
-               <div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-1">Retention Forecast</h3>
-                  <p className="text-xs text-white/30 font-medium">14-Day predicted workload analysis</p>
-               </div>
-               <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40">
-                 Active Engine
+          <div className="bg-background p-12 h-full">
+             <div className="flex items-center justify-between mb-16">
+               <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">RETENTION FORECAST</h3>
+                  <p className="text-xs text-foreground/30 font-bold uppercase tracking-widest">14-Day Workload Prediction</p>
                </div>
              </div>
              
-             <div className="h-[350px] w-full mt-4">
+             <div className="h-[400px] w-full">
                <ResponsiveContainer width="100%" height="100%">
                  <LineChart data={forecastData}>
-                   <defs>
-                     <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-                       <stop offset="0%" stopColor="#3b82f6" />
-                       <stop offset="100%" stopColor="#8b5cf6" />
-                     </linearGradient>
-                   </defs>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                   <CartesianGrid strokeDasharray="0" vertical={false} stroke="rgba(0,0,0,0.05)" />
                    <XAxis
                      dataKey="date"
-                     stroke="rgba(255,255,255,0.2)"
+                     stroke="rgba(0,0,0,0.2)"
                      fontSize={10}
                      tickLine={false}
                      axisLine={false}
                      dy={15}
                      fontFamily="var(--font-mono)"
+                     fontWeight="bold"
                    />
                    <YAxis
-                     stroke="rgba(255,255,255,0.2)"
+                     stroke="rgba(0,0,0,0.2)"
                      fontSize={10}
                      tickLine={false}
                      axisLine={false}
-                     tickFormatter={(value: any) => `${value}`}
                      fontFamily="var(--font-mono)"
+                     fontWeight="bold"
                    />
                    <Tooltip
+                     cursor={{ stroke: '#000', strokeWidth: 1 }}
                      contentStyle={{ 
-                        backgroundColor: '#0a0a0a', 
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '16px',
-                        boxShadow: '0 20px 40px -10px rgba(0,0,0,0.5)',
-                        backdropFilter: 'blur(10px)'
+                        backgroundColor: '#fff', 
+                        border: '2px solid #000',
+                        borderRadius: '0px',
+                        padding: '12px'
                      }}
-                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: '900' }}
-                     labelStyle={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', textTransform: 'uppercase', marginBottom: '4px' }}
+                     itemStyle={{ color: '#000', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                     labelStyle={{ color: '#000', fontSize: '10px', fontWeight: '900', marginBottom: '8px', borderBottom: '1px solid #000', paddingBottom: '4px' }}
                    />
                    <Line
-                     type="monotone"
+                     type="stepAfter"
                      dataKey="count"
-                     name="Reviews"
-                     stroke="url(#lineGradient)"
-                     strokeWidth={4}
-                     dot={false}
-                     activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 3 }}
-                     animationDuration={2000}
+                     name="REVIEWS"
+                     stroke="#000"
+                     strokeWidth={3}
+                     dot={{ r: 0 }}
+                     activeDot={{ r: 4, fill: '#000', strokeWidth: 0 }}
+                     animationDuration={1500}
                    />
                  </LineChart>
                </ResponsiveContainer>
              </div>
-          </Card>
+          </div>
         </motion.div>
 
         {/* Distribution Visualization */}
         <motion.div variants={item}>
-          <Card className="glass rounded-[2.5rem] p-8 border-white/[0.04]">
-             <div className="flex items-center justify-between mb-8">
-               <div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-widest mb-1">Memory Matrix</h3>
-                  <p className="text-xs text-white/30 font-medium">Distribution of cognitive retention layers</p>
-               </div>
-               <div className="px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[9px] font-black uppercase tracking-widest text-blue-500">
-                 Stable
+          <div className="bg-background p-12 h-full">
+             <div className="flex items-center justify-between mb-16">
+               <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-foreground uppercase tracking-tight">MEMORY MATRIX</h3>
+                  <p className="text-xs text-foreground/30 font-bold uppercase tracking-widest">Cognitive Layer Saturation</p>
                </div>
              </div>
              
-             <div className="h-[350px] w-full mt-4">
+             <div className="h-[400px] w-full">
                <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={retentionData} margin={{ left: -20, right: 10 }}>
-                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.03)" />
+                 <BarChart data={retentionData}>
+                   <CartesianGrid strokeDasharray="0" vertical={false} stroke="rgba(0,0,0,0.05)" />
                    <XAxis
                      dataKey="name"
-                     stroke="rgba(255,255,255,0.2)"
+                     stroke="rgba(0,0,0,0.2)"
                      fontSize={10}
                      tickLine={false}
                      axisLine={false}
                      dy={15}
                      fontFamily="var(--font-mono)"
+                     fontWeight="bold"
                    />
                    <YAxis
-                     stroke="rgba(255,255,255,0.2)"
+                     stroke="rgba(0,0,0,0.2)"
                      fontSize={10}
                      tickLine={false}
                      axisLine={false}
-                     tickFormatter={(value: any) => `${value}`}
                      fontFamily="var(--font-mono)"
+                     fontWeight="bold"
                    />
                    <Tooltip
-                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                     cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                      contentStyle={{ 
-                        backgroundColor: '#0a0a0a', 
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '16px',
-                        backdropFilter: 'blur(10px)'
+                        backgroundColor: '#fff', 
+                        border: '2px solid #000',
+                        borderRadius: '0px',
+                        padding: '12px'
                      }}
-                     itemStyle={{ color: '#fff', fontSize: '12px', fontWeight: '900' }}
+                     itemStyle={{ color: '#000', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                    />
                    <Bar
                      dataKey="value"
-                     name="Cards"
-                     radius={[8, 8, 0, 0]}
+                     name="CARDS"
+                     radius={0}
                      animationDuration={1500}
                    >
-                     {retentionData.map((entry, index) => (
-                       <Cell key={`cell-${index}`} fill={`rgba(59, 130, 246, ${0.4 + (index * 0.2)})`} />
+                     {retentionData.map((_entry, index) => (
+                       <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#000' : '#e4e4e7'} />
                      ))}
                    </Bar>
                  </BarChart>
                </ResponsiveContainer>
              </div>
-          </Card>
+          </div>
         </motion.div>
       </div>
     </motion.div>

@@ -139,20 +139,20 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col overflow-hidden selection:bg-primary/20">
+    <div className="min-h-screen bg-background flex flex-col overflow-hidden selection:bg-black selection:text-white">
       <StudyHeader 
         setTitle={set.title} 
         onFinish={handleFinish}
       />
 
-      <main className="flex-1 flex flex-col justify-center items-center px-6 py-12 max-w-5xl mx-auto w-full">
-        {/* Progress Tracker */}
-        <div className="w-full max-w-xl mb-12">
+      <main className="flex-1 flex flex-col justify-center items-center px-12 py-24 max-w-7xl mx-auto w-full">
+        {/* Progress Tracker - Stark and Wide */}
+        <div className="w-full max-w-4xl mb-24">
           <ProgressBar progress={progress} current={currentIndex + 1} total={totalCards} />
         </div>
 
-        {/* Card Stage with AnimatePresence for transitions */}
-        <div className="relative w-full max-w-3xl aspect-[3/2] sm:aspect-[4/3] perspective-1000">
+        {/* Card Stage - High impact focal point */}
+        <div className="relative w-full max-w-4xl aspect-[2/1] perspective-2000">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={currentIndex}
@@ -163,8 +163,8 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
               exit="exit"
               transition={{
                 type: 'spring',
-                stiffness: 300,
-                damping: 30
+                stiffness: 400,
+                damping: 40
               }}
               className="absolute inset-0"
             >
@@ -178,8 +178,8 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
           </AnimatePresence>
         </div>
 
-        {/* Action Controls */}
-        <div className="w-full max-w-2xl mt-12">
+        {/* Action Controls - Border-centric interaction */}
+        <div className="w-full max-w-4xl mt-24">
           <StudyControls
             isFlipped={isFlipped}
             isFirst={currentIndex === 0}
@@ -190,20 +190,20 @@ export function StudySession({ set, cards, userId }: StudySessionProps) {
           />
         </div>
 
-        {/* Minimalist Keyboard Overlay */}
-        <div className="mt-auto pt-12 flex gap-8 items-center text-[10px] font-black uppercase tracking-[0.2em] text-white/10">
-           <div className="flex items-center gap-2">
-             <span className="px-2 py-1 rounded bg-white/5 border border-white/10">Space</span>
-             <span>Flip Card</span>
+        {/* Interaction Map - Minimalist Overlay */}
+        <div className="mt-auto pt-24 flex gap-12 items-center text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20">
+           <div className="flex items-center gap-4">
+             <span className="px-3 py-1 bg-secondary text-foreground">SPACE</span>
+             <span>FLIP_INSIGHT</span>
            </div>
-           <div className="flex items-center gap-2">
-             <span className="px-2 py-1 rounded bg-white/5 border border-white/10">Arrows</span>
-             <span>Navigate</span>
+           <div className="flex items-center gap-4">
+             <span className="px-3 py-1 bg-secondary text-foreground">ARROWS</span>
+             <span>TRAVERSE</span>
            </div>
            {isFlipped && (
-             <div className="flex items-center gap-2 text-primary">
-               <span className="px-2 py-1 rounded bg-primary/10 border border-primary/20">1-4</span>
-               <span>Rate Recall</span>
+             <div className="flex items-center gap-4 text-foreground">
+               <span className="px-3 py-1 bg-foreground text-background">1-4</span>
+               <span>RATIFY_RECALL</span>
              </div>
            )}
         </div>

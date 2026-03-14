@@ -111,47 +111,29 @@ export default async function StatsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background selection:bg-primary/20">
-       <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-background/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-             <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="flex items-center gap-2.5 text-white/40 tracking-widest uppercase font-black text-xs">
-              Cognitio Analytics
+    <div className="min-h-screen bg-background selection:bg-black selection:text-white">
+      {/* High-Impact Header Area */}
+      <div className="px-12 py-24 bg-foreground border-b-8 border-foreground">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+          <div className="space-y-4">
+            <h1 className="text-8xl md:text-[10rem] font-black text-background leading-[0.8] tracking-tighter uppercase">
+              METRICS
+            </h1>
+            <p className="text-background/40 text-sm font-black tracking-[0.4em] uppercase">
+              Cognitive Evolution Tracking / System Version 2.0.1
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-[10px] font-black text-background/30 uppercase tracking-[0.3em]">Last Sync</div>
+            <div className="text-xl font-black text-background tabular-nums uppercase">
+              {new Date().toLocaleTimeString('en-GB')}
             </div>
           </div>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
-               {session.user.image ? (
-                 <img src={session.user.image} alt={session.user.name || ''} className="w-5 h-5 rounded-full" />
-               ) : (
-                 <User className="w-4 h-4 text-white/40" />
-               )}
-               <span className="text-xs font-semibold text-white/70">
-                 {session.user.name?.split(' ')[0]}
-               </span>
-            </div>
-            <SignOutButton />
-          </div>
         </div>
-      </header>
+      </div>
 
-       <main className="max-w-7xl mx-auto py-16 px-6">
-        <div className="mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4">
-            <BarChart3 className="w-3 h-3" />
-            Predictive Stats
-          </div>
-          <h1 className="text-[44px] font-black tracking-tight text-white mb-3">
-             Cognitive <span className="text-gradient">Performance</span>
-          </h1>
-          <p className="text-lg text-white/40 font-medium max-w-2xl">
-            Real-time insights into your memory consolidation and learning velocity.
-          </p>
-        </div>
-
+      <main className="py-24">
         <StatsSection stats={stats} forecastData={forecastData} retentionData={retentionData} />
       </main>
     </div>

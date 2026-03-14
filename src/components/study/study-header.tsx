@@ -10,29 +10,27 @@ type StudyHeaderProps = {
 
 export function StudyHeader({ setTitle, onFinish }: StudyHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/60 backdrop-blur-3xl border-b border-white/[0.04]">
-      <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background border-b-2 border-foreground">
+      <div className="max-w-7xl mx-auto px-12 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-10">
           <Button
             onClick={onFinish}
-            variant="ghost"
-            className="w-10 h-10 p-0 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all"
+            variant="outline"
+            className="size-12 p-0 rounded-none border-2 border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            <h1 className="text-xs font-black uppercase tracking-[0.3em] text-white/40 truncate max-w-[200px] sm:max-w-md">
-              Focusing on: <span className="text-white">{setTitle}</span>
+          <div className="flex flex-col">
+            <div className="text-[10px] font-black uppercase tracking-[0.4em] text-foreground/20 leading-none mb-1">LEARNING PROTOCOL</div>
+            <h1 className="text-xl font-black uppercase tracking-tighter text-foreground leading-none">
+              {setTitle}
             </h1>
           </div>
         </div>
         
-        <div className="flex items-center gap-3 text-right hidden sm:flex">
-          <div className="text-[10px] font-black uppercase tracking-widest text-white/20">Learning Protocol Active</div>
-          <div className="w-8 h-8 rounded bg-white/5 flex items-center justify-center border border-white/10">
-            <BrainCircuit className="w-4 h-4 text-white/40" />
-          </div>
+        <div className="flex items-center gap-6">
+           <div className="h-2 w-2 bg-foreground animate-pulse" />
+           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-foreground">SYSTEM_ACTIVE</span>
         </div>
       </div>
     </header>

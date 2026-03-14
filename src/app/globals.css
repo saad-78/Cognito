@@ -41,46 +41,47 @@
 }
 
 :root {
-  --radius: 0.75rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.585 0.233 253.94);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 264.695);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 264.695);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.585 0.233 253.94);
+  --radius: 0px; /* Swiss Modernist uses sharp corners or very specific small ones, but we'll go for extreme minimal 0-2px */
+  --background: #ffffff;
+  --foreground: #000000;
+  
+  --card: #ffffff;
+  --card-foreground: #000000;
+  
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  
+  --secondary: #f4f4f5;
+  --secondary-foreground: #000000;
+  
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  
+  --accent: #f4f4f5;
+  --accent-foreground: #000000;
+  
+  --destructive: #000000;
+  --destructive-foreground: #ffffff;
+  
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #000000;
 }
 
 .dark {
-  --background: #050505;
+  /* Minimal override for dark mode if user switches, but we shift to "Noir" mode */
+  --background: #000000;
   --foreground: #ffffff;
-  --card: #0a0a0a;
+  --card: #000000;
   --card-foreground: #ffffff;
-  --popover: #0a0a0a;
-  --popover-foreground: #ffffff;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #ffffff;
-  --muted: #111111;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #ffffff;
-  --destructive: #7f1d1d;
-  --border: rgba(255, 255, 255, 0.1);
-  --input: rgba(255, 255, 255, 0.05);
-  --ring: #3b82f6;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --border: #27272a;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
 }
 
 @layer base {
@@ -95,21 +96,19 @@
 
 @layer utilities {
   .glass {
-    @apply bg-white/[0.02] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_0_rgba(0,0,0,0.4)];
+    @apply bg-background border-border border shadow-none;
   }
   
   .glass-hover {
-    @apply hover:bg-white/[0.05] hover:border-white/[0.15] transition-all duration-500;
+    @apply hover:border-foreground/20 transition-all duration-300;
   }
 
   .text-gradient {
-    @apply bg-gradient-to-br from-white via-white to-white/30 bg-clip-text text-transparent;
+    @apply text-foreground;
   }
 
   .premium-shadow {
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 
-                0 4px 12px rgba(0, 0, 0, 0.6),
-                0 16px 48px rgba(0, 0, 0, 0.5);
+    @apply shadow-none border border-foreground/5;
   }
 
   .perspective-1000 {
@@ -136,18 +135,14 @@ html {
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #050505;
+  background: var(--background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+  background: #000;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #444;
-}
