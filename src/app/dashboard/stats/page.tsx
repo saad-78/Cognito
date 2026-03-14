@@ -5,6 +5,9 @@ import { eq, inArray } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
 import { StatsSection } from '@/components/dashboard/stats-section';
 import { addDays, startOfDay, format } from 'date-fns';
+import { SignOutButton } from '@/components/auth/sign-out-button';
+import { BrainCircuit, User, ArrowLeft, BarChart3 } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function StatsPage() {
   const session = await auth();
@@ -36,16 +39,13 @@ export default async function StatsPage() {
   let totalReviewed = 0;
   let masteredCards = 0;
 
-  // For future analysis (due dates)
   const today = startOfDay(new Date());
   const forecastMap = new Map<string, number>();
 
-  // Initialize forecast map for next 14 days
   for (let i = 0; i <= 14; i++) {
     forecastMap.set(format(addDays(today, i), 'MMM dd'), 0);
   }
 
-  // For retention distribution
   const retentionBuckets = {
     '0-3 days': 0,
     '4-7 days': 0,
@@ -67,14 +67,12 @@ export default async function StatsPage() {
     const now = new Date();
 
     userFlashcards.forEach((card) => {
-      // Basic Stats
       if (card.lastReviewedAt) {
         totalReviewed++;
         if (card.dueAt <= now) {
           dueToday++;
         }
 
-        // Retention Distribution (only for reviewed cards)
         if (card.intervalDays <= 3) retentionBuckets['0-3 days']++;
         else if (card.intervalDays <= 7) retentionBuckets['4-7 days']++;
         else if (card.intervalDays <= 21) retentionBuckets['8-21 days']++;
@@ -88,25 +86,19 @@ export default async function StatsPage() {
         masteredCards++;
       }
 
-      // Forecast mapping
-      // If a card is due in the past or today, we consider it due today for the forecast.
-      // If due in the future, we bucket it into the specific date.
       if (card.lastReviewedAt || card.dueAt > today) {
          let targetDate = card.dueAt;
          if (targetDate < today) targetDate = today;
 
          const dateKey = format(targetDate, 'MMM dd');
          if (forecastMap.has(dateKey)) {
-             forecastMap.set(dateKey, forecastMap.get(dateKey)! + 1);
+             forecastMap.set(dateKey, (forecastMap.get(dateKey) || 0) + 1);
          }
       }
     });
   }
 
-  // Convert map to array for chart
   const forecastData = Array.from(forecastMap, ([date, count]) => ({ date, count }));
-
-  // Convert retention buckets to array
   const retentionData = Object.entries(retentionBuckets).map(([name, value]) => ({ name, value }));
 
   const stats = {
@@ -119,17 +111,49 @@ export default async function StatsPage() {
   };
 
   return (
-    <div className="container mx-auto py-12 px-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-800">
-          Study Statistics
-        </h1>
-        <p className="mt-2 text-lg text-slate-500 max-w-2xl">
-          Track your progress, review forecast, and mastery.
-        </p>
-      </div>
+    <div className="min-h-screen bg-background selection:bg-primary/20">
+       <header className="sticky top-0 z-50 border-b border-white/[0.04] bg-background/80 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+             <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <div className="flex items-center gap-2.5 text-white/40 tracking-widest uppercase font-black text-xs">
+              Cognitio Analytics
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10">
+               {session.user.image ? (
+                 <img src={session.user.image} alt={session.user.name || ''} className="w-5 h-5 rounded-full" />
+               ) : (
+                 <User className="w-4 h-4 text-white/40" />
+               )}
+               <span className="text-xs font-semibold text-white/70">
+                 {session.user.name?.split(' ')[0]}
+               </span>
+            </div>
+            <SignOutButton />
+          </div>
+        </div>
+      </header>
 
-      <StatsSection stats={stats} forecastData={forecastData} retentionData={retentionData} />
+       <main className="max-w-7xl mx-auto py-16 px-6">
+        <div className="mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4">
+            <BarChart3 className="w-3 h-3" />
+            Predictive Stats
+          </div>
+          <h1 className="text-[44px] font-black tracking-tight text-white mb-3">
+             Cognitive <span className="text-gradient">Performance</span>
+          </h1>
+          <p className="text-lg text-white/40 font-medium max-w-2xl">
+            Real-time insights into your memory consolidation and learning velocity.
+          </p>
+        </div>
+
+        <StatsSection stats={stats} forecastData={forecastData} retentionData={retentionData} />
+      </main>
     </div>
   );
 }
