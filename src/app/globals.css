@@ -41,35 +41,36 @@
 }
 
 :root {
-  --radius: 0px; /* Swiss Modernist uses sharp corners or very specific small ones, but we'll go for extreme minimal 0-2px */
-  --background: #ffffff;
-  --foreground: #000000;
-  
-  --card: #ffffff;
-  --card-foreground: #000000;
-  
-  --popover: #ffffff;
-  --popover-foreground: #000000;
-  
-  --primary: #000000;
-  --primary-foreground: #ffffff;
-  
-  --secondary: #f4f4f5;
-  --secondary-foreground: #000000;
-  
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  
-  --accent: #f4f4f5;
-  --accent-foreground: #000000;
-  
-  --destructive: #000000;
-  --destructive-foreground: #ffffff;
-  
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #000000;
-}
+    --background: #fafaf9; /* stone-50 */
+    --foreground: #0c0a09; /* stone-950 */
+    
+    --primary: #0c0a09;
+    --primary-foreground: #fafaf9;
+    
+    --secondary: #f5f5f4; /* stone-100 */
+    --secondary-foreground: #44403c; /* stone-700 */
+    
+    --muted: #f5f5f4;
+    --muted-foreground: #78716c; /* stone-500 */
+    
+    --accent: #ca8a04; /* amber-600 - The Cognito Accent */
+    --accent-foreground: #ffffff;
+    
+    --destructive: #7f1d1d;
+    --destructive-foreground: #fafaf9;
+    
+    --border: #e7e5e4; /* stone-200 */
+    --input: #e7e5e4;
+    --ring: #0c0a09;
+    
+    --radius: 0px; /* Keeping the sharp Swiss edge but with softer colors */
+
+    --card: #ffffff;
+    --card-foreground: #0c0a09;
+    
+    --popover: #ffffff;
+    --popover-foreground: #0c0a09;
+  }
 
 .dark {
   /* Minimal override for dark mode if user switches, but we shift to "Noir" mode */
@@ -89,18 +90,38 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02";
+    @apply bg-background text-foreground antialiased selection:bg-accent selection:text-white;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer utilities {
+  .premium-lift {
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .premium-lift:hover {
+    border-color: var(--foreground);
+    background: #ffffff;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+
   .glass {
-    @apply bg-background border-border border shadow-none;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
   }
   
   .glass-hover {
-    @apply hover:border-foreground/20 transition-all duration-300;
+    transition: all 0.2s ease;
+  }
+
+  .glass-hover:hover {
+    background: #ffffff;
+    border-color: var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   }
 
   .text-gradient {
