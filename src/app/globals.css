@@ -1,3 +1,8 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 @theme inline {
@@ -94,16 +99,16 @@
   }
 
   .premium-lift:hover {
-    border-color: var(--foreground);
-    background: #ffffff;
-    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08);
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
   }
 
   .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(2, 44, 34, 0.6);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .glass-hover {
