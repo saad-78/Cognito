@@ -47,105 +47,122 @@ export function StudySetList({ initialSets }: { initialSets: any[] }) {
   }
 
   return (
-    <div className="space-y-24">
-      {/* Stats Cluster - Industrial High Contrast */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border border border-border shadow-sm">
+    <div className="space-y-32">
+      {/* Stats Cluster - Veridian Analysis */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5 shadow-2xl">
         {[
           { label: 'Neural Collections', value: sets.length, icon: Brain },
-          { label: 'Active Patterns', value: '14 Active', icon: Zap },
-          { label: 'Retention Score', value: '92%', icon: Sparkles }
+          { label: 'Sync Status', value: '14 ACTIVE', icon: Zap },
+          { label: 'Retention Logic', value: '92%', icon: Sparkles }
         ].map((stat, i) => (
-          <div key={i} className="p-12 bg-background relative group overflow-hidden">
-            <div className="relative z-10 space-y-4">
-              <div className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.4em]">{stat.label}</div>
-              <div className="text-6xl font-black text-foreground tracking-tighter tabular-nums">{stat.value}</div>
+          <div key={i} className="p-16 bg-background relative group overflow-hidden">
+             <div className="absolute top-0 left-0 w-1 h-0 bg-primary/20 transition-all duration-700 group-hover:h-full" />
+            <div className="relative z-10 space-y-6">
+              <div className="text-[10px] font-black text-primary uppercase tracking-[0.5em]">{stat.label}</div>
+              <div className="font-heading text-6xl font-black text-foreground tracking-tighter tabular-nums">{stat.value}</div>
             </div>
-            <stat.icon className="absolute bottom-[-20px] right-[-20px] size-40 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity" />
+            <stat.icon className="absolute bottom-[-30px] right-[-30px] size-48 text-primary/5 group-hover:text-primary/10 transition-colors duration-700" />
           </div>
         ))}
       </div>
 
-      {/* Logic Generator - The Interaction Point */}
-      <section className="max-w-4xl mx-auto text-center space-y-12">
-        <div className="space-y-4">
-           <h2 className="text-4xl font-black uppercase tracking-tighter">Expand Knowledge Vault</h2>
-           <p className="text-foreground/40 text-sm font-bold tracking-tight uppercase">Input subject parameters to generate new intelligence nodes.</p>
+      {/* Logic Generator - Veridian Command Point */}
+      <section className="max-w-5xl mx-auto space-y-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-12">
+          <div className="space-y-4">
+            <h2 className="font-heading text-4xl md:text-6xl font-black uppercase tracking-tighter leading-none">Initialize Vault.</h2>
+            <p className="text-white/30 text-[10px] font-black tracking-[0.4em] uppercase">Input parameters to synthesize new neural nodes.</p>
+          </div>
+          <div className="h-px flex-1 bg-white/5 mx-8 mb-4 hidden md:block" />
         </div>
 
-        <form ref={formRef} action={handleCreate} className="flex flex-col md:flex-row gap-4 p-2 bg-secondary border border-border">
+        <form ref={formRef} action={handleCreate} className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-px bg-white/5 border border-white/5">
           <Input
             name="title"
-            placeholder="SUBJECT: E.G. THERMODYNAMICS"
+            placeholder="SUBJECT_ID (E.G. QUANTUM_DYNAMICS)"
             required
-            className="flex-1 h-14 bg-background border-none rounded-none text-xs font-black uppercase tracking-widest px-8 focus-visible:ring-1 focus-visible:ring-accent"
+            className="h-24 bg-background border-none rounded-none text-[11px] font-black uppercase tracking-[0.3em] px-10 focus-visible:ring-1 focus-visible:ring-primary/20"
           />
           <Input
             name="description"
-            placeholder="OPTIONAL: CONTEXT..."
-            className="flex-1 h-14 bg-background border-none rounded-none text-xs font-black uppercase tracking-widest px-8 focus-visible:ring-1 focus-visible:ring-accent"
+            placeholder="CONTEXTAL_MAPPING (OPTIONAL)"
+            className="h-24 bg-background border-none rounded-none text-[11px] font-black uppercase tracking-[0.3em] px-10 focus-visible:ring-1 focus-visible:ring-primary/20 border-l border-white/5"
           />
           <Button
             type="submit"
             disabled={isCreating}
-            className="h-14 px-12 bg-accent text-white font-black uppercase tracking-[0.2em] rounded-none hover:bg-accent/90"
+            className="h-24 px-20 bg-primary text-background font-heading text-[12px] uppercase tracking-[0.4em] font-black rounded-none hover:bg-white transition-all cursor-pointer"
           >
-            {isCreating ? 'PROCESSING...' : 'GENERATE'}
+            {isCreating ? 'SYNTHESIZING...' : 'INITIALIZE'}
           </Button>
         </form>
       </section>
 
       {/* Intelligence Grid */}
-      <div className="space-y-12">
-        <div className="flex items-end justify-between border-b border-border pb-8">
-           <h3 className="text-2xl font-black uppercase tracking-tighter">Active Intelligence Nodes</h3>
-           <span className="text-[10px] font-black text-foreground/20 uppercase tracking-[0.3em]">{sets.length} NODES_STABLE</span>
+      <div className="space-y-16">
+        <div className="flex items-end justify-between border-b border-white/5 pb-12">
+          <div className="space-y-4">
+             <h3 className="font-heading text-3xl font-black uppercase tracking-tight">Access Nodes</h3>
+             <div className="flex items-center gap-4">
+                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black text-primary uppercase tracking-[0.4em]">{sets.length} NODES_ONLINE</span>
+             </div>
+          </div>
+          <Library className="w-12 h-12 text-white/5" />
         </div>
 
         <AnimatePresence mode="popLayout">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {sets.map((set) => (
               <motion.div
                 key={set.id}
                 layout
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="group h-full"
               >
-                <Card className="premium-lift h-full border border-border bg-background group-hover:bg-background transition-all">
-                  <CardHeader className="p-10 pb-6">
-                    <div className="flex justify-between items-start mb-8">
-                      <div className="w-12 h-12 bg-secondary flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all duration-300">
-                        <Library className="w-6 h-6" />
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                         <div className="px-3 py-1 bg-secondary text-[8px] font-black uppercase tracking-[0.3em]">
-                            {set._count?.cards || 0} NODES
-                         </div>
-                         <button
-                           onClick={async () => await deleteStudySet(set.id)}
-                           className="text-[8px] font-black text-foreground/10 hover:text-destructive uppercase tracking-widest transition-colors"
-                         >
-                           Purge_Node
-                         </button>
+                <Card className="premium-lift h-full border border-white/5 bg-[#022c22]/30 backdrop-blur-md rounded-none relative overflow-hidden group-hover:border-primary/50 transition-all duration-500">
+                  <div className="absolute top-0 right-0 p-8">
+                     <div className="w-12 h-12 border border-white/10 flex items-center justify-center group-hover:bg-primary transition-all duration-500">
+                        <Zap className="w-6 h-6 text-white/20 group-hover:text-background" />
+                     </div>
+                  </div>
+
+                  <CardHeader className="p-12 pb-8">
+                    <div className="flex justify-between items-start mb-12">
+                      <div className="px-4 py-2 bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-[0.3em] text-primary">
+                        {set._count?.cards || 0} DATAPOINTS
                       </div>
                     </div>
-                    <Link href={`/dashboard/sets/${set.id}`}>
-                      <CardTitle className="text-2xl font-black uppercase tracking-tighter leading-none group-hover:text-accent transition-colors">
-                        {set.title}
-                      </CardTitle>
-                    </Link>
-                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-foreground/40 mt-6 line-clamp-2">
-                      {set.description || "NO_DESCRIPTION_MAPPED"}
-                    </CardDescription>
+                    
+                    <div className="space-y-6">
+                       <Link href={`/dashboard/sets/${set.id}`}>
+                         <CardTitle className="font-heading text-3xl font-black uppercase tracking-tight leading-[0.9] group-hover:text-primary transition-colors cursor-pointer">
+                           {set.title}
+                         </CardTitle>
+                       </Link>
+                       <CardDescription className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover:text-white/60 transition-colors mt-6 line-clamp-3 leading-relaxed">
+                         {set.description || "NO_DESCRIPTION_MAPPED"}
+                       </CardDescription>
+                    </div>
                   </CardHeader>
-                  <CardFooter className="p-10 pt-0">
-                    <Link href={`/dashboard/sets/${set.id}`} className="w-full">
-                      <Button variant="outline" className="w-full h-12 rounded-none border-border group-hover:border-accent group-hover:text-accent text-[10px] font-black uppercase tracking-[0.3em] transition-all">
-                        Access Neural Vault
-                        <ArrowRight className="ml-3 w-4 h-4" />
-                      </Button>
-                    </Link>
+
+                  <CardFooter className="p-12 pt-0 flex flex-col items-start gap-8">
+                    <div className="h-px w-full bg-white/5" />
+                    <div className="flex items-center justify-between w-full">
+                       <Link href={`/dashboard/sets/${set.id}`} className="group/btn">
+                         <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] text-primary transition-all group-hover/btn:gap-6 cursor-pointer">
+                           OPEN_VAULT <ArrowRight className="w-4 h-4" />
+                         </div>
+                       </Link>
+                       <button
+                         onClick={async () => await deleteStudySet(set.id)}
+                         className="text-[9px] font-black text-white/5 hover:text-destructive uppercase tracking-widest transition-colors cursor-pointer"
+                       >
+                         PURGE
+                       </button>
+                    </div>
                   </CardFooter>
                 </Card>
               </motion.div>

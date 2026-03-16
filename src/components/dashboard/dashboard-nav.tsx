@@ -14,7 +14,7 @@ export function DashboardNav({ user }: { user: any }) {
       <div className="p-8 pb-12">
         <Link href="/dashboard" className="flex items-center gap-3">
           <div className="w-8 h-8 bg-foreground flex items-center justify-center">
-             <BrainCircuit className="w-5 h-5 text-background" />
+            <BrainCircuit className="w-5 h-5 text-background" />
           </div>
           <span className="font-black text-xl tracking-tighter uppercase">COGNITIO</span>
         </Link>
@@ -31,8 +31,8 @@ export function DashboardNav({ user }: { user: any }) {
             href={item.href}
             className={cn(
               "flex items-center gap-4 px-6 py-4 transition-all group",
-              pathname === item.href 
-                ? "bg-foreground text-background" 
+              pathname === item.href
+                ? "bg-foreground text-background"
                 : "text-foreground/40 hover:text-foreground hover:bg-secondary"
             )}
           >
@@ -43,13 +43,13 @@ export function DashboardNav({ user }: { user: any }) {
       </nav>
 
       <div className="p-8 border-t border-border mt-auto">
-         <button
-           onClick={() => signOut()}
-           className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 hover:text-destructive transition-colors group w-full"
-         >
-           <span className="w-1.5 h-1.5 bg-foreground/20 group-hover:bg-destructive" />
-           Terminate_Session
-         </button>
+        <button
+          onClick={() => signOut()}
+          className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-foreground/40 hover:text-destructive transition-colors group w-full"
+        >
+          <span className="w-1.5 h-1.5 bg-foreground/20 group-hover:bg-destructive" />
+          Terminate_Session
+        </button>
       </div>
     </aside>
   );
