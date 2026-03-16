@@ -7,7 +7,7 @@ import { StudySetList } from '@/components/dashboard/set-list';
 import { SignOutButton } from '@/components/auth/sign-out-button';
 import { BrainCircuit, User } from 'lucide-react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -62,8 +62,8 @@ export default async function DashboardPage() {
       <main className="max-w-7xl mx-auto py-24 px-12">
         <div className="mb-24 space-y-8">
           <div className="flex items-center gap-4">
-             <div className="h-px w-12 bg-primary" />
-             <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Command Center</span>
+            <div className="h-px w-12 bg-primary" />
+            <span className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Command Center</span>
           </div>
           <h1 className="font-heading text-6xl md:text-8xl font-black tracking-tighter uppercase leading-none">
             Digital<br />
@@ -76,15 +76,10 @@ export default async function DashboardPage() {
 
         <div className="mt-16 relative">
           <div className="absolute -top-12 right-0 flex items-center gap-4">
-             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Active Nodes</span>
-             <div className="h-[2px] w-24 bg-white/5 overflow-hidden">
-                <motion.div 
-                  initial={{ x: '-100%' }}
-                  animate={{ x: '100%' }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  className="h-full w-12 bg-primary/40"
-                />
-             </div>
+            <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20">Active Nodes</span>
+            <div className="h-[2px] w-24 bg-white/5 overflow-hidden">
+                <div className="h-full w-12 bg-primary/40 animate-pulse" />
+            </div>
           </div>
           <StudySetList initialSets={JSON.parse(JSON.stringify(userSets))} />
 
